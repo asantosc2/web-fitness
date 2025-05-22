@@ -1,0 +1,22 @@
+# Entornos virtuales
+venv/
+.env
+
+# Bytecode compilado de Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Configuración de VS Code
+.vscode/
+
+# Archivos de log
+*.log
+
+# Docker
+docker-compose.override.yml
+*.env
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
