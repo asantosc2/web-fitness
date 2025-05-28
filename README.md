@@ -1,60 +1,113 @@
-# Plataforma Web Fitness – TFC Alejandro Santos
 
-## 🧠 Funcionalidades completas (versión final)
+# 🏋️ Plataforma Web Fitness (TFC – Alejandro Santos)
 
-### 🏋️ Gestión de ejercicios
-- Crear y consultar ejercicios filtrando por grupo muscular o equipo
-- Añadir imágenes y vídeos demostrativos
+Proyecto de fin de ciclo DAW: una aplicación web para la gestión personalizada de entrenamientos, dietas y progreso físico.
 
-### 🧠 Crear y gestionar rutinas
-- Crear rutinas personales
-- Añadir ejercicios con orden, series, repeticiones y descanso
-- Consultar rutinas por defecto del sistema
-- Copiar una rutina por defecto a tu cuenta
+---
 
-### 🔁 Iniciar rutina como sesión real
-- Generar una sesión a partir de una rutina
-- Registrar repeticiones reales, peso y comentarios
+## 🧠 Tecnologías utilizadas
 
-### 📈 Seguimiento de progreso físico
-- Guardar peso, comentarios y fotos de evolución por fecha
-- Consultar tu historial de progreso
+- **Frontend**: React.js + Tailwind CSS
+- **Backend**: FastAPI + SQLModel + Uvicorn
+- **Base de datos**: PostgreSQL (Docker)
+- **Contenedores**: Docker & Docker Compose
+- **Control de versiones**: Git + GitHub
+- **Prototipos y diseño**: Figma
+- **Despliegue**: Railway (backend) + Vercel (frontend)
 
-### 🕒 Historial de sesiones
-- Ver sesiones anteriores y los ejercicios realizados en cada una
-- Usar esta información para valorar mejoras reales
+---
 
-### 🥗 Consulta nutricional (API Open Food Facts)
-- Buscar alimentos reales de supermercados por nombre (Mercadona, Carrefour…)
-- Ver imagen del producto + calorías, proteínas, CH y grasas por 100 g
-- Seleccionar un alimento y usarlo en tus dietas
+## 📐 Estructura de base de datos
 
-### 🍽️ Crear y gestionar dietas
-- Crear varias dietas personales
-- Dividir en comidas (Desayuno, Comida, Cena…)
-- Añadir alimentos a cada comida con macros personalizados por porción
+### Entidades principales
+
+- `Usuario`
+- `Ejercicio` (público o personalizado)
+- `Rutina` → contiene ejercicios
+- `Sesión` → entrenamiento real basado en rutina
+- `Progreso` → registro físico del usuario (peso, fotos, notas)
+- `Alimento` → consulta por Open Food Facts o manual
+- `Dieta` → contiene comidas con alimentos personalizados
+
+---
+
+## 🔧 Funcionalidades implementadas
+
+### 🧍‍♂️ Usuario
+- Registro de usuario
+- Login (pendiente de implementación con autenticación)
+- Registro automático de fecha de alta
+
+### 💪 Ejercicios
+- Ver todos los ejercicios predefinidos
+- Crear ejercicios personalizados por usuario
+- Filtros por grupo muscular, equipo, tipo, etc.
+
+### 🧩 Rutinas
+- Crear rutinas con nombre y descripción
+- Añadir ejercicios a la rutina con orden, series, repeticiones y descanso
+- Ver rutinas propias y rutinas por defecto
+
+### 🔁 Sesiones de entrenamiento
+- Iniciar sesión desde rutina (copia ejercicios)
+- Registrar peso, repeticiones, comentarios por ejercicio
+- Guardar sesiones pasadas y ver historial
+
+### 📈 Progreso físico
+- Registrar peso corporal, comentarios y fotos
+- Ver evolución semanal o mensual
+
+### 🍽️ Consulta nutricional
+- Buscar alimentos reales desde la API de Open Food Facts
+- Mostrar nombre, marca, calorías, macros, imagen
+- Insertar alimentos personalizados por el usuario
+
+### 🥗 Dietas y comidas
+- Crear dietas por usuario
+- Añadir comidas a cada dieta
+- Añadir alimentos a cada comida (porción, macros)
+- Los alimentos pueden ser propios o buscados por API
 
 ### ✍️ Crear alimentos personalizados
 - El usuario puede crear sus propios alimentos (ej: “batido casero postentreno”)
-- Introduce manualmente los macros por 100 g
+- Introduce manualmente los macros por 100g
 - Estos alimentos se asocian solo a su cuenta (`usuario_id`)
 
-### 🧩 Relación estructural (base de datos)
-- Rutinas → ejercicios → sesiones reales
-- Progreso físico por usuario (peso, fotos, fecha)
-- Dietas → comidas → alimentos (públicos o personales)
-- Alimentos consultables desde Open Food Facts o creados por el usuario
+---
 
-### 🔐 Gestión individualizada
-- Los alimentos personalizados solo son visibles para el usuario que los crea
-- Los alimentos públicos están accesibles desde cualquier cuenta
+## 📦 Estructura del proyecto
+
+```bash
+web-fitness/
+├── web-fitness-front/     # React + Tailwind
+├── web-fitness-back/      # FastAPI + SQLModel
+│   ├── app/
+│   │   ├── main.py
+│   │   ├── models.py
+│   │   ├── routes.py
+│   │   └── db.py
+│   ├── requirements.txt
+│   └── docker-compose.yml
+└── entregas/              # Informes, entregables
+```
+
+---
+
+## 🧪 Cómo ejecutar el backend
+
+```bash
+cd web-fitness-back
+python -m venv venv && source venv/bin/activate  # o .\venv\Scripts\activate en Windows
+pip install -r requirements.txt
+docker compose up -d  # levanta PostgreSQL
+uvicorn app.main:app --reload  # arranca la API
+```
 
 ---
 
 ## 📌 Diagrama entidad-relación
 
 ```mermaid
-
 ---
 config:
   theme: base
@@ -77,6 +130,7 @@ erDiagram
     USUARIO {
         int id PK
         string nombre
+        string apellidos
         string email
         string hashed_password
         datetime fecha_registro
@@ -173,5 +227,6 @@ erDiagram
         string imagen_url
         int usuario_id FK
     }
-
 ```
+
+---
