@@ -20,3 +20,5 @@ docker-compose.override.yml
 # Sistema operativo
 .DS_Store
 Thumbs.db
+
+.idea/

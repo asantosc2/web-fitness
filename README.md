@@ -1,4 +1,3 @@
-
 # 🏋️ Plataforma Web Fitness (TFC – Alejandro Santos)
 
 Proyecto de fin de ciclo DAW: una aplicación web para la gestión personalizada de entrenamientos, dietas y progreso físico.
@@ -7,75 +6,71 @@ Proyecto de fin de ciclo DAW: una aplicación web para la gestión personalizada
 
 ## 🧠 Tecnologías utilizadas
 
-- **Frontend**: React.js + Tailwind CSS
-- **Backend**: FastAPI + SQLModel + Uvicorn
-- **Base de datos**: PostgreSQL (Docker)
-- **Contenedores**: Docker & Docker Compose
-- **Control de versiones**: Git + GitHub
-- **Prototipos y diseño**: Figma
-- **Despliegue**: Railway (backend) + Vercel (frontend)
+* **Frontend**: React.js + Tailwind CSS
+* **Backend**: FastAPI + SQLModel + Uvicorn
+* **Base de datos**: PostgreSQL (Docker)
+* **Contenedores**: Docker & Docker Compose
+* **Control de versiones**: Git + GitHub
+* **Prototipos y diseño**: Figma
+* **Despliegue**: Railway (backend) + Vercel (frontend)
 
 ---
 
-## 📐 Estructura de base de datos
+## 📊 Funcionalidades implementadas
 
-### Entidades principales
+### 🧐 Usuario
 
-- `Usuario`
-- `Ejercicio` (público o personalizado)
-- `Rutina` → contiene ejercicios
-- `Sesión` → entrenamiento real basado en rutina
-- `Progreso` → registro físico del usuario (peso, fotos, notas)
-- `Alimento` → consulta por Open Food Facts o manual
-- `Dieta` → contiene comidas con alimentos personalizados
-
----
-
-## 🔧 Funcionalidades implementadas
-
-### 🧍‍♂️ Usuario
-- Registro de usuario
-- Login (pendiente de implementación con autenticación)
-- Registro automático de fecha de alta
+* Registro de usuario
+* Login (pendiente de implementación con autenticación JWT)
+* Recuperación de contraseña por correo (token temporal)
+* Registro automático de fecha de alta
 
 ### 💪 Ejercicios
-- Ver todos los ejercicios predefinidos
-- Crear ejercicios personalizados por usuario
-- Filtros por grupo muscular, equipo, tipo, etc.
+
+* Ver todos los ejercicios predefinidos
+* Crear ejercicios personalizados por usuario
+* Filtros por grupo muscular, equipo, tipo, etc.
 
 ### 🧩 Rutinas
-- Crear rutinas con nombre y descripción
-- Añadir ejercicios a la rutina con orden, series, repeticiones y descanso
-- Ver rutinas propias y rutinas por defecto
+
+* Crear rutinas con nombre y descripción
+* Añadir ejercicios a la rutina con orden, series, repeticiones y descanso
+* Ver rutinas propias y rutinas por defecto
+* Copiar rutinas por defecto a la cuenta del usuario
 
 ### 🔁 Sesiones de entrenamiento
-- Iniciar sesión desde rutina (copia ejercicios)
-- Registrar peso, repeticiones, comentarios por ejercicio
-- Guardar sesiones pasadas y ver historial
+
+* Iniciar sesión desde rutina (copia ejercicios)
+* Registrar peso real, repeticiones efectivas, comentarios
+* Consultar sesiones pasadas y ver historial
 
 ### 📈 Progreso físico
-- Registrar peso corporal, comentarios y fotos
-- Ver evolución semanal o mensual
 
-### 🍽️ Consulta nutricional
-- Buscar alimentos reales desde la API de Open Food Facts
-- Mostrar nombre, marca, calorías, macros, imagen
-- Insertar alimentos personalizados por el usuario
+* Registrar peso corporal, comentarios y fotos
+* Consultar evolución semanal o mensual
 
-### 🥗 Dietas y comidas
-- Crear dietas por usuario
-- Añadir comidas a cada dieta
-- Añadir alimentos a cada comida (porción, macros)
-- Los alimentos pueden ser propios o buscados por API
+### 🥽 Consulta nutricional
+
+* Buscar alimentos reales por nombre en la API Open Food Facts
+* Mostrar nombre, marca, calorías y macros por 100g
+* Mostrar imagen del alimento para verificación visual
+
+### 🍽️ Dietas y comidas
+
+* Crear dietas personales
+* Dividirlas en comidas (desayuno, comida, cena...)
+* Añadir alimentos por porción con macros personalizados
+* Usar alimentos de Open Food Facts o creados por el usuario
 
 ### ✍️ Crear alimentos personalizados
-- El usuario puede crear sus propios alimentos (ej: “batido casero postentreno”)
-- Introduce manualmente los macros por 100g
-- Estos alimentos se asocian solo a su cuenta (`usuario_id`)
+
+* El usuario puede crear sus propios alimentos (ej: "batido postentreno")
+* Introducir nombre, imagen opcional, macros por 100g
+* Asociados únicamente al usuario que los crea
 
 ---
 
-## 📦 Estructura del proyecto
+## 📆 Estructura del proyecto
 
 ```bash
 web-fitness/
@@ -93,7 +88,7 @@ web-fitness/
 
 ---
 
-## 🧪 Cómo ejecutar el backend
+## 🚪 Cómo ejecutar el backend
 
 ```bash
 cd web-fitness-back
@@ -133,6 +128,7 @@ erDiagram
         string apellidos
         string email
         string hashed_password
+        date fecha_nacimiento
         datetime fecha_registro
     }
 
