@@ -46,6 +46,38 @@ def crear_usuario(usuario: UsuarioCreate, session: Session = Depends(get_session
     session.refresh(nuevo_usuario)
     return nuevo_usuario
 
+@router.put("/usuarios/me", response_model=UsuarioRead)
+def actualizar_mis_datos(
+    datos: UsuarioUpdate,
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if datos.email and datos.email != current_user.email:
+        # Comprobar que no exista otro usuario con ese email
+        existente = session.exec(select(Usuario).where(Usuario.email == datos.email)).first()
+        if existente:
+            raise HTTPException(status_code=400, detail="Ese email ya está registrado por otro usuario")
+    
+    for clave, valor in datos.dict(exclude_unset=True).items():
+        if clave == "hashed_password":
+            valor = hashear_password(valor)
+        if clave == "is_admin":
+            continue  # No permitimos que el usuario se haga admin
+        setattr(current_user, clave, valor)
+
+    session.add(current_user)
+    session.commit()
+    session.refresh(current_user)
+    return current_user
+
+@router.delete("/usuarios/me", status_code=204)
+def borrar_mi_cuenta(session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
+        if current_user.is_admin:
+            raise HTTPException(status_code=403, detail="Un administrador no puede eliminar su propia cuenta.")
+        
+        session.delete(current_user)
+        session.commit()
+        return JSONResponse(status_code=204, content={"mensaje": "Cuenta eliminada correctamente"})
 
 @router.get("/usuarios", response_model=List[UsuarioRead])
 def listar_usuarios(current_user: Usuario = Depends(get_current_user), session: Session = Depends(get_session)):
@@ -167,7 +199,7 @@ def restablecer_password(request: RestablecerPasswordRequest, session: Session =
 @router.post("/login")
 def login(request: UsuarioLogin, session: Session = Depends(get_session)):
     usuario = session.exec(select(Usuario).where(Usuario.email == request.email)).first()
-    if not usuario or not verificar_password(request.password, usuario.hashed_password):
+    if not usuario or not verificar_password(request.hashed_password, usuario.hashed_password):
         raise HTTPException(status_code=401, detail="Credenciales inválidas")
 
     access_token = crear_token({"sub": str(usuario.id)})
@@ -176,39 +208,6 @@ def login(request: UsuarioLogin, session: Session = Depends(get_session)):
 @router.get("/perfil", response_model=UsuarioRead)
 def ver_perfil(current_user: Usuario = Depends(get_current_user)):
     return current_user
-
-@router.put("/usuarios/me", response_model=UsuarioRead)
-def actualizar_mis_datos(
-    datos: UsuarioUpdate,
-    session: Session = Depends(get_session),
-    current_user: Usuario = Depends(get_current_user)
-):
-    if datos.email and datos.email != current_user.email:
-        # Comprobar que no exista otro usuario con ese email
-        existente = session.exec(select(Usuario).where(Usuario.email == datos.email)).first()
-        if existente:
-            raise HTTPException(status_code=400, detail="Ese email ya está registrado por otro usuario")
-    
-    for clave, valor in datos.dict(exclude_unset=True).items():
-        if clave == "hashed_password":
-            valor = hashear_password(valor)
-        if clave == "is_admin":
-            continue  # No permitimos que el usuario se haga admin
-        setattr(current_user, clave, valor)
-
-    session.add(current_user)
-    session.commit()
-    session.refresh(current_user)
-    return current_user
-
-@router.delete("/usuarios/me", status_code=204)
-def borrar_mi_cuenta(session: Session = Depends(get_session), current_user: Usuario = Depends(get_current_user)):
-        if current_user.is_admin:
-            raise HTTPException(status_code=403, detail="Un administrador no puede eliminar su propia cuenta.")
-        
-        session.delete(current_user)
-        session.commit()
-        return JSONResponse(status_code=204, content={"mensaje": "Cuenta eliminada correctamente"})
 
 @router.get("/verify-token")
 def verificar_token_actual(current_user: Usuario = Depends(get_current_user)):

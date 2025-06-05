@@ -95,7 +95,7 @@ class UsuarioRead(BaseModel):
 
 class UsuarioLogin(BaseModel):
     email: str
-    password: str
+    hashed_password: str
 
 class RecuperarPasswordRequest(BaseModel):
     email: str
