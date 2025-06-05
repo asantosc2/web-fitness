@@ -5,11 +5,14 @@ from typing import Optional, List
 class Usuario(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
-    apellidos: str
+    apellido: str
     email: str
     hashed_password: str
     fecha_nacimiento: date
     fecha_registro: datetime = Field(default_factory=datetime.utcnow)
+    is_admin: bool = Field(default=False)
+    token_recuperacion: Optional[str] = Field(default=None, index=True)
+    token_expira: Optional[datetime] = None
 
 class Ejercicio(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -41,7 +44,7 @@ class RutinaEjercicio(SQLModel, table=True):
 
     # Relaciones inversas
     rutina: Optional[Rutina] = Relationship(back_populates="ejercicios")
-    ejercicio: Optional["Ejercicio"] = Relationship()
+    ejercicio: Optional[Ejercicio] = Relationship()
 
 
 class Sesion(SQLModel, table=True):

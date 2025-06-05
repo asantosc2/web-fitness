@@ -21,9 +21,11 @@ Proyecto de fin de ciclo DAW: una aplicación web para la gestión personalizada
 ### 🧐 Usuario
 
 * Registro de usuario
-* Login (pendiente de implementación con autenticación JWT)
+* Login con autenticación JWT
 * Recuperación de contraseña por correo (token temporal)
 * Registro automático de fecha de alta
+* Actualización de perfil
+* Eliminación de cuenta (solo administradores pueden eliminar cuentas ajenas)
 
 ### 💪 Ejercicios
 
@@ -79,8 +81,13 @@ web-fitness/
 │   ├── app/
 │   │   ├── main.py
 │   │   ├── models.py
-│   │   ├── routes.py
-│   │   └── db.py
+│   │   ├── routers/
+│   │   │   └── usuarios.py
+│   │   ├── db.py
+│   │   ├── auth.py
+│   │   ├── dependencies.py
+│   │   ├── schemas.py
+│   │   ├── validators.py
 │   ├── requirements.txt
 │   └── docker-compose.yml
 └── entregas/              # Informes, entregables
@@ -125,11 +132,12 @@ erDiagram
     USUARIO {
         int id PK
         string nombre
-        string apellidos
+        string apellido
         string email
         string hashed_password
         date fecha_nacimiento
         datetime fecha_registro
+        boolean is_admin
     }
 
     EJERCICIO {
@@ -224,5 +232,3 @@ erDiagram
         int usuario_id FK
     }
 ```
-
----
