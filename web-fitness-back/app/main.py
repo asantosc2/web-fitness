@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from sqlmodel import SQLModel
 from app.db import engine
-from app.routers import usuarios
+from app.routers import usuarios, ejercicios
 
 app = FastAPI()
 
@@ -11,6 +11,7 @@ def on_startup():
     print("Base de datos inicializada correctamente.")
 
 app.include_router(usuarios.router)
+app.include_router(ejercicios.router)
 
 @app.get("/")
 def root():
