@@ -20,11 +20,19 @@ def hashear_password(password_plana: str) -> str:
     return pwd_context.hash(password_plana)
 
 # Crea el token JWT a partir de los datos del usuario
-def crear_token(data: dict) -> str:
+# def crear_token(data: dict) -> str:
+#     to_encode = data.copy()
+#     expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+#     to_encode.update({"exp": expire})
+#     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+
+# Crea un token JWT con una expiración personalizada CAMBIAR ANTES DE PRODUCCIÓN
+def crear_token(data: dict, expiracion_minutos: int = 30):
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    expire = datetime.utcnow() + timedelta(minutes=expiracion_minutos)
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return encoded_jwt
 
 # Verifica el token y devuelve el 'sub' (user_id)
 def verificar_token(token: str) -> int | None:

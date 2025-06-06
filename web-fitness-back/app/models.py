@@ -41,7 +41,6 @@ class RutinaEjercicio(SQLModel, table=True):
     orden: int
     series: int
     repeticiones: int
-    descanso: int
 
     # Relaciones inversas
     rutina: Optional[Rutina] = Relationship(back_populates="ejercicios")

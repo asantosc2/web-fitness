@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from sqlmodel import SQLModel
 from app.db import engine
-from app.routers import usuarios, ejercicios
+from app.routers import usuarios, ejercicios, rutinas
 
 app = FastAPI()
 
@@ -12,6 +12,7 @@ def on_startup():
 
 app.include_router(usuarios.router)
 app.include_router(ejercicios.router)
+app.include_router(rutinas.router)
 
 @app.get("/")
 def root():

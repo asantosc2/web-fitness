@@ -107,3 +107,67 @@ class EjercicioUpdate(BaseModel):
     tipo_equipo: Optional[str] = None
     imagen_url: Optional[str] = None
     video_url: Optional[str] = None
+
+# Crear rutina (entrada del usuario)
+class RutinaCreate(BaseModel):
+    nombre: str
+    descripcion: Optional[str] = None
+
+    @field_validator('nombre')
+    @classmethod
+    def validar_nombre(cls, v):
+        if len(v.strip()) < 3:
+            raise ValueError("El nombre debe tener al menos 3 caracteres")
+        return v
+
+# Leer rutina (respuesta al frontend)
+class RutinaRead(BaseModel):
+    id: int
+    nombre: str
+    descripcion: Optional[str] = None
+    usuario_id: Optional[int]
+    fecha_creacion: datetime
+    es_defecto: bool
+
+    class Config:
+        from_attributes = True
+
+# Actualizar rutina
+class RutinaUpdate(BaseModel):
+    nombre: Optional[str] = None
+    descripcion: Optional[str] = None
+
+# Crear asociación ejercicio → rutina
+class RutinaEjercicioCreate(BaseModel):
+    ejercicio_id: int
+    orden: int
+    series: int
+    repeticiones: int
+    comentarios: Optional[str] = None
+
+    @field_validator("orden", "series", "repeticiones")
+    @classmethod
+    def mayores_que_cero(cls, v):
+        if v < 1:
+            raise ValueError("El valor debe ser mayor que cero")
+        return v   
+
+# Leer la asociación
+class RutinaEjercicioRead(BaseModel):
+    id: int
+    rutina_id: int
+    ejercicio_id: int
+    orden: int
+    series: int
+    repeticiones: int
+    comentarios: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+# Actualizar una fila concreta
+class RutinaEjercicioUpdate(BaseModel):
+    orden: Optional[int] = None
+    series: Optional[int] = None
+    repeticiones: Optional[int] = None
+    comentarios: Optional[str] = None
