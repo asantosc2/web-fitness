@@ -21,6 +21,7 @@ class Ejercicio(SQLModel, table=True):
     tipo_equipo: str     
     imagen_url: Optional[str] = None
     video_url: Optional[str] = None
+    usuario_id: Optional[int] = Field(default=None, foreign_key="usuario.id")
 
 class Rutina(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

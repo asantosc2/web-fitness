@@ -11,7 +11,6 @@ class UsuarioCreate(BaseModel):
     email: str
     hashed_password: str
     fecha_nacimiento: date
-    is_admin: bool = False  # Por defecto, los nuevos usuarios no son administradores
 
     # Validación para asegurar que los campos no estén vacíos y cumplen con restricciones comunes
     @field_validator("nombre", "apellido", "email", "hashed_password", mode="before")
@@ -40,11 +39,11 @@ class UsuarioCreate(BaseModel):
 
 
 class UsuarioUpdate(BaseModel):
-    nombre: Optional[str]
-    apellido: Optional[str]
-    email: Optional[str]
-    hashed_password: Optional[str]
-    fecha_nacimiento: Optional[date]
+    nombre: Optional[str] = None
+    apellido: Optional[str] = None
+    email: Optional[str] = None
+    hashed_password: Optional[str] = None
+    fecha_nacimiento: Optional[date] = None
 
     @field_validator("nombre", "apellido", mode="before")
     def validar_nombre_apellido(cls, value, info):
@@ -53,25 +52,6 @@ class UsuarioUpdate(BaseModel):
     @field_validator("email", mode="before")
     def validar_email(cls, value):
         return validar_email(value)
-
-    @field_validator("hashed_password", mode="before")
-    def validar_password_segura(cls, value):
-        return validar_password_segura(value)
-
-    @field_validator("fecha_nacimiento", mode="before")
-    def validar_fecha_nacimiento(cls, value):
-        return validar_fecha_nacimiento(value)
-
-
-class UsuarioSelfUpdate(BaseModel):
-    nombre: str
-    apellido: str
-    hashed_password: str
-    fecha_nacimiento: date
-
-    @field_validator("nombre", "apellido", mode="before")
-    def validar_nombre_apellido(cls, value, info):
-        return validar_nombre_apellido(value, info.field_name)
 
     @field_validator("hashed_password", mode="before")
     def validar_password_segura(cls, value):
@@ -95,7 +75,7 @@ class UsuarioRead(BaseModel):
 
 class UsuarioLogin(BaseModel):
     email: str
-    hashed_password: str
+    password: str
 
 class RecuperarPasswordRequest(BaseModel):
     email: str
