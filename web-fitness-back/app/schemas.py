@@ -90,6 +90,7 @@ class EjercicioBase(BaseModel):
     tipo_equipo: str
     imagen_url: Optional[str] = None
     video_url: Optional[str] = None
+    descripcion: Optional[str] = None
 
 class EjercicioCreate(EjercicioBase):
     pass
@@ -107,6 +108,7 @@ class EjercicioUpdate(BaseModel):
     tipo_equipo: Optional[str] = None
     imagen_url: Optional[str] = None
     video_url: Optional[str] = None
+    descripcion: Optional[str] = None
 
 # Crear rutina (entrada del usuario)
 class RutinaCreate(BaseModel):
