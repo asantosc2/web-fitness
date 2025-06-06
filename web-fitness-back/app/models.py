@@ -35,6 +35,7 @@ class Rutina(SQLModel, table=True):
     ejercicios: List["RutinaEjercicio"] = Relationship(back_populates="rutina")
 
 class RutinaEjercicio(SQLModel, table=True):
+    __tablename__ = "rutina_ejercicio"
     id: Optional[int] = Field(default=None, primary_key=True)
     rutina_id: int = Field(foreign_key="rutina.id")
     ejercicio_id: int = Field(foreign_key="ejercicio.id")
@@ -57,6 +58,7 @@ class Sesion(SQLModel, table=True):
     ejercicios: List["SesionEjercicio"] = Relationship(back_populates="sesion")
 
 class SesionEjercicio(SQLModel, table=True):
+    __tablename__ = "sesion_ejercicio"
     id: Optional[int] = Field(default=None, primary_key=True)
     sesion_id: int = Field(foreign_key="sesion.id")
     ejercicio_id: int = Field(foreign_key="ejercicio.id")
@@ -94,6 +96,7 @@ class Comida(SQLModel, table=True):
     alimentos: List["ComidaAlimento"] = Relationship(back_populates="comida")
 
 class ComidaAlimento(SQLModel, table=True):
+    __tablename__ = "comida_alimento"
     id: Optional[int] = Field(default=None, primary_key=True)
     comida_id: int = Field(foreign_key="comida.id")
     alimento_id: int = Field(foreign_key="alimento.id")

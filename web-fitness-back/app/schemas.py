@@ -160,7 +160,7 @@ class RutinaEjercicioRead(BaseModel):
     orden: int
     series: int
     repeticiones: int
-    comentarios: Optional[str]
+    comentarios: Optional[str] = None
 
     class Config:
         from_attributes = True
