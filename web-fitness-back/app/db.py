@@ -1,14 +1,8 @@
-from sqlmodel import create_engine
-
-DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/web_fitness"
-
-
-engine = create_engine(DATABASE_URL, echo=True)
-
-from sqlmodel import Session, SQLModel, create_engine
+from sqlmodel import create_engine, Session
 
 DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/web_fitness"
 engine = create_engine(DATABASE_URL, echo=True)
+
 
 def get_session():
     with Session(engine) as session:
