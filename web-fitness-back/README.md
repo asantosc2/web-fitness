@@ -33,33 +33,41 @@ web-fitness-back/
 │   ├── auth.py               # Login, hash de contraseñas y tokens JWT
 │   └── routers/
 │       ├── usuarios.py       # CRUD y auth de usuarios
-│       └── ejercicios.py     # CRUD de ejercicios con control de acceso
+│       ├── ejercicios.py     # CRUD de ejercicios con control de acceso
+│       └── rutinas.py        # Gestión de rutinas y ejercicios asociados
 ├── requirements.txt          # Dependencias del backend
 └── docker-compose.yml        # Servicio PostgreSQL local
 ```
 
 ---
 
-## 🔐 Módulo de Usuarios
+## 🔐 Gestión de Usuarios
 
-* Registro con validaciones personalizadas
-* Login y autenticación por JWT
-* Acceso a `/usuarios`, `/login`, `/perfil`, `/recuperar`, `/restablecer`
-* Permisos por rol (`is_admin`)
-* Edición/borrado solo por el propio usuario (excepto admin)
-* Recuperación de contraseña por token de un solo uso
-* Protección de rutas con `Depends(get_current_user)`
+* Registro de usuarios con validaciones personalizadas.
+* Inicio de sesión con autenticación basada en JWT.
+* Recuperación de contraseña mediante token temporal.
+* Actualización de perfil, incluyendo validación de contraseñas seguras.
+* Eliminación de cuentas, con restricciones según roles (`is_admin`).
+* Listado y consulta de usuarios (solo para administradores).
 
 ---
 
-## 💪 Módulo de Ejercicios
+## 💪 Gestión de Ejercicios
 
-* Crear ejercicio (el usuario puede definir nombre, grupo, tipo)
-* Si no es admin, no puede subir `imagen_url` ni `video_url`
-* Ver ejercicios públicos (sin `usuario_id`) y los propios
-* Editar y eliminar solo si es el dueño o administrador
-* Los ejercicios públicos no se pueden eliminar
-* Uso de filtros combinados `(usuario_id == None OR usuario_id == current_user.id)`
+* Creación de ejercicios personalizados por los usuarios.
+* Visualización de ejercicios públicos y propios.
+* Edición y eliminación de ejercicios, con restricciones de permisos.
+* Filtros por grupo muscular, tipo de equipo y otros atributos.
+
+---
+
+## 🧩 Gestión de Rutinas
+
+* Creación de rutinas con nombre y descripción.
+* Asociación de ejercicios a rutinas, con orden, series y repeticiones.
+* Visualización de rutinas propias y rutinas por defecto.
+* Edición y eliminación de rutinas, respetando permisos de usuario.
+* Copia de rutinas por defecto a cuentas de usuarios.
 
 ---
 
@@ -201,18 +209,17 @@ erDiagram
 
 ## 🚧 Módulos pendientes
 
-* CRUD completo de rutinas (`Rutina`, `RutinaEjercicio`)
-* Registro de sesiones de entrenamiento (`Sesion`, `SesionEjercicio`)
-* Seguimiento físico con progreso y fotos (`Progreso`)
-* Gestión de alimentos y dietas (`Dieta`, `Comida`, `Alimento`)
-* Integración con API externa para búsqueda de alimentos (OpenFoodFacts)
-* Tests automatizados con `pytest`
-* Despliegue completo en Railway
+* Registro de sesiones de entrenamiento (`Sesion`, `SesionEjercicio`).
+* Seguimiento físico con progreso y fotos (`Progreso`).
+* Gestión de alimentos y dietas (`Dieta`, `Comida`, `Alimento`).
+* Integración con API externa para búsqueda de alimentos (OpenFoodFacts).
+* Tests automatizados con `pytest`.
+* Despliegue completo en Railway.
 
 ---
 
 ## 👤 Autor
 
-**Alejandro Santos Cabrera**
-TFC – Desarrollo de Aplicaciones Web (DAW)
+**Alejandro Santos Cabrera**  
+TFC – Desarrollo de Aplicaciones Web (DAW)  
 Backend desarrollado con **FastAPI** y **PostgreSQL**
