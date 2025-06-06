@@ -4,7 +4,7 @@ from uuid import uuid4
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from app.models import Usuario
-from app.db import engine
+from app.db import get_session
 from app.schemas import RecuperarPasswordRequest, RestablecerPasswordRequest, UsuarioCreate, UsuarioLogin, UsuarioRead, UsuarioUpdate
 from fastapi.responses import JSONResponse
 from app.auth import crear_token, verificar_password, hashear_password
@@ -23,10 +23,6 @@ logging.basicConfig(
 )
 
 router = APIRouter()
-
-def get_session():
-    with Session(engine) as session:
-        yield session
 
 @router.post("/usuarios", response_model=UsuarioRead)
 def crear_usuario(usuario: UsuarioCreate, session: Session = Depends(get_session)):
