@@ -83,3 +83,27 @@ class RecuperarPasswordRequest(BaseModel):
 class RestablecerPasswordRequest(BaseModel):
     token: str
     nueva_password: str
+
+class EjercicioBase(BaseModel):
+    nombre: str
+    grupo_muscular: str
+    tipo_equipo: str
+    imagen_url: Optional[str] = None
+    video_url: Optional[str] = None
+
+class EjercicioCreate(EjercicioBase):
+    pass
+
+class EjercicioRead(EjercicioBase):
+    id: int
+    usuario_id: Optional[int]
+
+    class Config:
+        from_attributes = True
+
+class EjercicioUpdate(BaseModel):
+    nombre: Optional[str] = None
+    grupo_muscular: Optional[str] = None
+    tipo_equipo: Optional[str] = None
+    imagen_url: Optional[str] = None
+    video_url: Optional[str] = None
