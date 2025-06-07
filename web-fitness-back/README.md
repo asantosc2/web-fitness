@@ -1,6 +1,7 @@
 # ⚙️ Backend – Plataforma Web Fitness
 
-Este directorio contiene todo el código backend del proyecto **TFC: Plataforma Web Fitness**, desarrollado por **Alejandro Santos Cabrera** para el ciclo **Desarrollo de Aplicaciones Web (DAW)**.
+Este directorio contiene todo el código backend del proyecto **TFC: Plataforma Web Fitness**, 
+desarrollado por **Alejandro Santos Cabrera** para el ciclo **Desarrollo de Aplicaciones Web (DAW)**.
 
 Está construido con **FastAPI + SQLModel + PostgreSQL**, e implementa una arquitectura moderna, escalable y bien documentada.
 
@@ -15,6 +16,8 @@ Está construido con **FastAPI + SQLModel + PostgreSQL**, e implementa una arqui
 * **JWT** – autenticación y autorización por token
 * **Docker Compose** – entorno reproducible con contenedores
 * **Pydantic** – validación de datos avanzada con `@field_validator`
+* **httpx** – cliente HTTP para integración con OpenFoodFacts
+* **Pytest** – pruebas automáticas para endpoints clave
 
 ---
 
@@ -31,12 +34,19 @@ web-fitness-back/
 │   ├── validators.py         # Validaciones personalizadas
 │   ├── dependencies.py       # get_current_user + lógica de permisos
 │   ├── auth.py               # Login, hash de contraseñas y tokens JWT
+│   ├── services/
+│   │   └── openfood.py       # Cliente para OpenFoodFacts
 │   └── routers/
 │       ├── usuarios.py       # CRUD y auth de usuarios
 │       ├── ejercicios.py     # CRUD de ejercicios con control de acceso
-│       └── rutinas.py        # Gestión de rutinas y ejercicios asociados
+│       ├── rutinas.py        # Gestión de rutinas y ejercicios asociados
+│       ├── sesiones.py       # Registro de sesiones de entrenamiento
+│       ├── alimentos.py      # Gestión de alimentos + búsqueda externa
+│       ├── progresos.py      # Seguimiento de peso y fotos
+│       └── progreso_fotos.py # Subida/borrado de fotos de progreso
 ├── requirements.txt          # Dependencias del backend
-└── docker-compose.yml        # Servicio PostgreSQL local
+├── docker-compose.yml        # Servicio PostgreSQL local
+└── tests/                    # Pruebas automatizadas con pytest
 ```
 
 ---
@@ -46,28 +56,53 @@ web-fitness-back/
 * Registro de usuarios con validaciones personalizadas.
 * Inicio de sesión con autenticación basada en JWT.
 * Recuperación de contraseña mediante token temporal.
-* Actualización de perfil, incluyendo validación de contraseñas seguras.
-* Eliminación de cuentas, con restricciones según roles (`is_admin`).
-* Listado y consulta de usuarios (solo para administradores).
+* Actualización de perfil con verificación de seguridad.
+* Eliminación de cuentas con control de roles (`is_admin`).
+* Listado y consulta de usuarios (solo admins).
 
 ---
 
 ## 💪 Gestión de Ejercicios
 
-* Creación de ejercicios personalizados por los usuarios.
-* Visualización de ejercicios públicos y propios.
-* Edición y eliminación de ejercicios, con restricciones de permisos.
-* Filtros por grupo muscular, tipo de equipo y otros atributos.
+* Creación de ejercicios propios.
+* Visualización de ejercicios públicos y privados.
+* Edición y eliminación con control de permisos.
+* Filtros por grupo muscular, tipo de equipo, nivel, etc.
 
 ---
 
-## 🧩 Gestión de Rutinas
+## 🧹 Gestión de Rutinas
 
-* Creación de rutinas con nombre y descripción.
-* Asociación de ejercicios a rutinas, con orden, series y repeticiones.
-* Visualización de rutinas propias y rutinas por defecto.
-* Edición y eliminación de rutinas, respetando permisos de usuario.
-* Copia de rutinas por defecto a cuentas de usuarios.
+* Crear rutinas personales o duplicar rutinas por defecto.
+* Añadir ejercicios con orden, series, repeticiones, descanso.
+* Editar y borrar rutinas completas.
+
+---
+
+## 🏋️ Registro de Sesiones de Entrenamiento
+
+* Generación de una sesión a partir de una rutina.
+* Registro real de entrenamiento (peso, reps, notas).
+* Edición posterior de sesiones previas.
+
+---
+
+## 📈 Seguimiento de Progreso Físico
+
+* Registro de peso corporal y comentarios por fecha.
+* Subida de hasta 10 fotos por progreso (formato seguro).
+* Visualización del histórico con fotos.
+* Eliminación de fotos individuales o del progreso completo.
+
+---
+
+## 🍽️ Gestión de Alimentos (modo básico)
+
+* Buscar alimentos reales en OpenFoodFacts (API externa).
+* Guardar productos seleccionados como `Alimento` propio.
+* Listar, editar y eliminar alimentos personalizados.
+
+📌 **La creación de dietas completas (`Dieta`, `Comida`, `ComidaAlimento`) queda como futura implementación.**
 
 ---
 
@@ -78,30 +113,30 @@ cd web-fitness-back
 python -m venv venv && source venv/bin/activate  # En Windows: .\venv\Scripts\activate
 pip install -r requirements.txt
 docker compose up -d                             # Levanta PostgreSQL en localhost:5432
-uvicorn app.main:app --reload                    # Levanta el servidor en http://localhost:8000
+uvicorn app.main:app --reload                    # Servidor en http://localhost:8000
 ```
+
+---
 
 ## 📌 Diagrama entidad-relación
 
 ```mermaid
----
-config:
-  theme: base
----
-erDiagram
+
     USUARIO ||--o{ RUTINA              : crea
     USUARIO ||--o{ PROGRESO            : registra
     USUARIO ||--o{ SESION              : realiza
-    USUARIO ||--o{ DIETA               : define
     USUARIO ||--o{ ALIMENTO            : introduce
     RUTINA ||--o{ RUTINAEJERCICIO      : contiene
     EJERCICIO ||--o{ RUTINAEJERCICIO   : pertenece
     SESION ||--o{ SESIONEJERCICIO      : contiene
     EJERCICIO ||--o{ SESIONEJERCICIO   : ejecuta
     RUTINA ||--o{ SESION               : origen
-    DIETA ||--o{ COMIDA                : contiene
+
+    PROGRESO ||--o{ PROGRESOFOTO       : tiene
+    ALIMENTO ||--o{ COMIDAALIMENTO     : está_en
     COMIDA ||--o{ COMIDAALIMENTO       : incluye
-    COMIDAALIMENTO ||--|| ALIMENTO     : referencia
+    DIETA ||--o{ COMIDA                : compone
+    USUARIO ||--o{ DIETA               : define
 
     USUARIO {
         int id PK
@@ -148,7 +183,12 @@ erDiagram
         date fecha
         float peso
         string comentarios
-        string foto_url
+    }
+
+    PROGRESOFOTO {
+        int id PK
+        int progreso_id FK
+        string ruta
     }
 
     SESION {
@@ -168,6 +208,18 @@ erDiagram
         int repeticiones
         float peso
         string comentarios
+    }
+
+    ALIMENTO {
+        int id PK
+        string nombre
+        float calorias_100g
+        float proteinas_100g
+        float carbohidratos_100g
+        float grasas_100g
+        float fibra_100g
+        string imagen_url
+        int usuario_id FK
     }
 
     DIETA {
@@ -193,33 +245,21 @@ erDiagram
         float carbohidratos
         float grasas
     }
-
-    ALIMENTO {
-        int id PK
-        string nombre
-        float calorias_100g
-        float proteinas_100g
-        float carbohidratos_100g
-        float grasas_100g
-        float fibra_100g
-        string imagen_url
-        int usuario_id FK
-    }
 ```
+
+---
 
 ## 🚧 Módulos pendientes
 
-* Registro de sesiones de entrenamiento (`Sesion`, `SesionEjercicio`).
-* Seguimiento físico con progreso y fotos (`Progreso`).
-* Gestión de alimentos y dietas (`Dieta`, `Comida`, `Alimento`).
-* Integración con API externa para búsqueda de alimentos (OpenFoodFacts).
-* Tests automatizados con `pytest`.
-* Despliegue completo en Railway.
+* 👨‍🍳 Implementación completa de dietas: `Dieta`, `Comida`, `ComidaAlimento`
+* 🔍 Filtros y ordenaciones por campos en varios endpoints
+* ⚠️ Control de errores más detallado (status, mensajes)
+* ☁️ Despliegue completo en **Railway** con volúmenes y variables seguras
 
 ---
 
 ## 👤 Autor
 
-**Alejandro Santos Cabrera**  
-TFC – Desarrollo de Aplicaciones Web (DAW)  
-Backend desarrollado con **FastAPI** y **PostgreSQL**
+**Alejandro Santos Cabrera**
+TFC – Desarrollo de Aplicaciones Web (DAW)
+Backend desarrollado con **FastAPI**, **PostgreSQL** y **Docker**
