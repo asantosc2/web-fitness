@@ -45,11 +45,10 @@ class RutinaEjercicio(SQLModel, table=True):
     orden: int
     series: int
     repeticiones: int
+    comentarios: Optional[str] = Field(default=None)   
 
-    # Relaciones inversas
     rutina: Optional[Rutina] = Relationship(back_populates="ejercicios")
     ejercicio: Optional[Ejercicio] = Relationship()
-
 
 class Sesion(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
