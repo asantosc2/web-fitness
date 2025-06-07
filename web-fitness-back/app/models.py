@@ -27,13 +27,15 @@ class Ejercicio(SQLModel, table=True):
 class Rutina(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
-    descripcion: str
+    descripcion: Optional[str] = Field(default=None, nullable=True)
     usuario_id: int = Field(foreign_key="usuario.id")
     fecha_creacion: datetime = Field(default_factory=datetime.utcnow)
     es_defecto: bool = False
 
-    # Relaciones
-    ejercicios: List["RutinaEjercicio"] = Relationship(back_populates="rutina")
+    ejercicios: List["RutinaEjercicio"] = Relationship(
+        back_populates="rutina",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
 
 class RutinaEjercicio(SQLModel, table=True):
     __tablename__ = "rutina_ejercicio"
