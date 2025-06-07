@@ -5,7 +5,7 @@ from app.models import Ejercicio, Usuario
 from app.schemas import EjercicioCreate, EjercicioRead, EjercicioUpdate
 from app.dependencies import get_current_user, get_session
 
-router = APIRouter()
+router = APIRouter(tags=["Ejercicio"])
 
 @router.post("/ejercicios", response_model=EjercicioRead)
 def crear_ejercicio(

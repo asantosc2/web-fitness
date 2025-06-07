@@ -8,7 +8,7 @@ from app.schemas import (
 )
 from app.dependencies import get_current_user, get_session
 
-router = APIRouter()
+router = APIRouter(tags=["Rutina"])
 
 @router.post("/rutinas", response_model=RutinaRead)
 def crear_rutina(

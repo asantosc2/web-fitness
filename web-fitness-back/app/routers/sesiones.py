@@ -6,7 +6,7 @@ from app.models import Sesion, Rutina, RutinaEjercicio, SesionEjercicio, Usuario
 from app.schemas import SesionCreate, SesionEjercicioCreate, SesionEjercicioUpdate, SesionRead, SesionEjercicioRead
 from app.dependencies import get_current_user, get_session
 
-router = APIRouter()
+router = APIRouter(tags=["Sesion"])
 
 @router.post("/sesiones", response_model=SesionRead)
 def crear_sesion(

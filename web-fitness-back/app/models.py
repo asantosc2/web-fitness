@@ -1,3 +1,4 @@
+#models.py
 from sqlmodel import SQLModel, Field, Relationship
 from datetime import date, datetime
 from typing import Optional, List
@@ -34,8 +35,7 @@ class Rutina(SQLModel, table=True):
 
     ejercicios: List["RutinaEjercicio"] = Relationship(
         back_populates="rutina",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
-    )
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 class RutinaEjercicio(SQLModel, table=True):
     __tablename__ = "rutina_ejercicio"
@@ -79,7 +79,18 @@ class Progreso(SQLModel, table=True):
     fecha: date
     peso: float
     comentarios: Optional[str] = None
-    foto_url: Optional[str] = None
+
+    fotos: List["ProgresoFoto"] = Relationship(
+    back_populates="progreso",
+    sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+
+class ProgresoFoto(SQLModel, table=True):
+    __tablename__ = "progreso_foto"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    progreso_id: int = Field(foreign_key="progreso.id")
+    ruta: str
+
+    progreso: Optional[Progreso] = Relationship(back_populates="fotos")
 
 class Dieta(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

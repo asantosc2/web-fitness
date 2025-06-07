@@ -7,7 +7,7 @@ from app.models import Alimento
 from app.dependencies import get_current_user
 from app.services.openfood import buscar_alimentos_openfood
 
-router = APIRouter(prefix="/alimentos", tags=["Alimentos"])
+router = APIRouter(prefix="/alimentos", tags=["Alimento"])
 
 # Búsqueda en OpenFood
 @router.get("/buscar-openfood")

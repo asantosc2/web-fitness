@@ -1,5 +1,6 @@
-from typing import Optional
-from pydantic import BaseModel, field_validator
+#schemas.py
+from typing import List, Optional
+from pydantic import BaseModel, Field, field_validator
 from datetime import date, datetime
 from app.validators import validar_nombre_apellido, validar_email, validar_password_segura, validar_fecha_nacimiento
 
@@ -241,6 +242,34 @@ class AlimentoUpdate(BaseModel):
 class AlimentoRead(AlimentoBase):
     id: int
     imagen_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class ProgresoFotoRead(BaseModel):
+    id: int
+    foto: str = Field(alias="ruta") 
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+
+
+class ProgresoCreate(BaseModel):
+    fecha: date
+    peso: float
+    comentarios: Optional[str] = None
+
+class ProgresoUpdate(BaseModel):
+    peso: Optional[float] = None
+    comentarios: Optional[str] = None
+
+class ProgresoRead(BaseModel):
+    id: int
+    fecha: date
+    peso: float
+    comentarios: Optional[str]
+    fotos: List[ProgresoFotoRead] = []
 
     class Config:
         from_attributes = True

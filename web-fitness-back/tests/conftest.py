@@ -6,7 +6,7 @@ BASE_URL = "http://127.0.0.1:8000"
 
 @pytest_asyncio.fixture
 async def async_client():
-    async with httpx.AsyncClient(base_url=BASE_URL) as client:
+    async with httpx.AsyncClient(base_url=BASE_URL, timeout=15.0) as client:
         yield client
 
 async def crear_usuario(client, email, password="Testpass123@", is_admin=False):

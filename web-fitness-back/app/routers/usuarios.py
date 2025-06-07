@@ -22,7 +22,7 @@ logging.basicConfig(
     ]
 )
 
-router = APIRouter()
+router = APIRouter(tags=["Usuario"])
 
 @router.post("/usuarios", response_model=UsuarioRead)
 def crear_usuario(usuario: UsuarioCreate, session: Session = Depends(get_session)):
