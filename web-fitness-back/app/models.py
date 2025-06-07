@@ -118,6 +118,5 @@ class Alimento(SQLModel, table=True):
     proteinas_100g: float
     carbohidratos_100g: float
     grasas_100g: float
-    fibra_100g: Optional[float] = None
     imagen_url: Optional[str] = None
     usuario_id: Optional[int] = Field(default=None, foreign_key="usuario.id")

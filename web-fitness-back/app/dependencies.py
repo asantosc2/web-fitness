@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException, Header
-from sqlmodel import Session, select
+from sqlmodel import Session
 from app.db import get_session
 from app.auth import verificar_token
 from app.models import Usuario

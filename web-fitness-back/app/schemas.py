@@ -218,3 +218,29 @@ class SesionEjercicioUpdate(BaseModel):
     repeticiones: Optional[int] = None
     peso: Optional[float] = None
     comentarios: Optional[str] = None
+
+class AlimentoBase(BaseModel):
+    nombre: str
+    calorias_100g: float
+    proteinas_100g: float
+    carbohidratos_100g: float
+    grasas_100g: float
+    imagen_url: Optional[str] = None
+
+class AlimentoCreate(AlimentoBase):
+    pass
+
+class AlimentoUpdate(BaseModel):
+    nombre: Optional[str] = None
+    calorias_100g: Optional[float] = None
+    proteinas_100g: Optional[float] = None
+    carbohidratos_100g: Optional[float] = None
+    grasas_100g: Optional[float] = None
+    imagen_url: Optional[str] = None
+
+class AlimentoRead(AlimentoBase):
+    id: int
+    imagen_url: Optional[str] = None
+
+    class Config:
+        from_attributes = True
