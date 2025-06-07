@@ -173,3 +173,48 @@ class RutinaEjercicioUpdate(BaseModel):
     series: Optional[int] = None
     repeticiones: Optional[int] = None
     comentarios: Optional[str] = None
+
+class SesionCreate(BaseModel):
+    rutina_id: Optional[int] = None
+    nota: Optional[str] = None
+
+class SesionRead(BaseModel):
+    id: int
+    usuario_id: int
+    fecha: date
+    rutina_id: Optional[int]
+    nota: Optional[str]
+
+    class Config:
+        from_attributes = True
+
+
+# --- SESION EJERCICIO ---
+
+class SesionEjercicioCreate(BaseModel):
+    ejercicio_id: int
+    orden: int
+    series: int
+    repeticiones: int
+    peso: float
+    comentarios: Optional[str] = None
+
+class SesionEjercicioRead(BaseModel):
+    id: int
+    sesion_id: int
+    ejercicio_id: int
+    orden: int
+    series: int
+    repeticiones: int
+    peso: float
+    comentarios: Optional[str] = None
+
+    class Config:
+        from_attributes = True
+
+class SesionEjercicioUpdate(BaseModel):
+    orden: Optional[int] = None
+    series: Optional[int] = None
+    repeticiones: Optional[int] = None
+    peso: Optional[float] = None
+    comentarios: Optional[str] = None
