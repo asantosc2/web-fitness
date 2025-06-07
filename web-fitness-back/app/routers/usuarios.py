@@ -31,7 +31,7 @@ def crear_usuario(usuario: UsuarioCreate, session: Session = Depends(get_session
         raise HTTPException(status_code=400, detail="Ya existe un usuario con ese email")
 
     data = usuario.dict()
-    data["hashed_password"] = hashear_password(data["hashed_password"])
+    data["hashed_password"] = hashear_password(data.pop("password"))
     data["is_admin"] = False
     nuevo_usuario = Usuario(**data)
 

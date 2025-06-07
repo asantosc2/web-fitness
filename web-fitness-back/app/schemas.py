@@ -9,11 +9,11 @@ class UsuarioCreate(BaseModel):
     nombre: str
     apellido: str
     email: str
-    hashed_password: str
+    password: str
     fecha_nacimiento: date
 
     # Validación para asegurar que los campos no estén vacíos y cumplen con restricciones comunes
-    @field_validator("nombre", "apellido", "email", "hashed_password", mode="before")
+    @field_validator("nombre", "apellido", "email", "password", mode="before")
     def validar_campos_comunes(cls, value, info):
         if value is None or value.strip() == "":
             raise ValueError(f"El campo {info.field_name} es obligatorio y no puede estar vacío")
@@ -24,7 +24,7 @@ class UsuarioCreate(BaseModel):
         return validar_email(value)
 
     # Validación de la seguridad de la contraseña
-    @field_validator("hashed_password", mode="before")
+    @field_validator("password", mode="before")
     def validar_password_segura(cls, value):
         return validar_password_segura(value)
 
@@ -42,7 +42,7 @@ class UsuarioUpdate(BaseModel):
     nombre: Optional[str] = None
     apellido: Optional[str] = None
     email: Optional[str] = None
-    hashed_password: Optional[str] = None
+    password: Optional[str] = None
     fecha_nacimiento: Optional[date] = None
 
     @field_validator("nombre", "apellido", mode="before")
@@ -53,7 +53,7 @@ class UsuarioUpdate(BaseModel):
     def validar_email(cls, value):
         return validar_email(value)
 
-    @field_validator("hashed_password", mode="before")
+    @field_validator("password", mode="before")
     def validar_password_segura(cls, value):
         return validar_password_segura(value)
 
