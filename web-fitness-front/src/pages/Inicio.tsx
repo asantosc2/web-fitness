@@ -2,11 +2,17 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import fondoLanding from "../assets/fondo-landing.jpg";
 import Navbar from "../components/Navbar";
+import { useEffect } from "react";
 
 export default function Inicio() {
   const { estado } = useAuth();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (estado.token) {
+      navigate("/dashboard");
+    }
+  }, [estado.token]);
   return (
     <div className="flex flex-col">
       <Navbar />
