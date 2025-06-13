@@ -5,8 +5,11 @@ from app.db import engine
 from app.routers import usuarios, ejercicios, rutinas, sesiones, alimentos, progresos, progreso_fotos
 from fastapi.openapi.utils import get_openapi
 from fastapi.security import HTTPBearer
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
+security = HTTPBearer()
+
 
 @app.on_event("startup")
 def on_startup():
@@ -21,7 +24,7 @@ app.include_router(alimentos.router)
 app.include_router(progresos.router)
 app.include_router(progreso_fotos.router)
 
-security = HTTPBearer()
+
 
 def custom_openapi():
     if app.openapi_schema:
@@ -52,3 +55,11 @@ app.openapi = custom_openapi
 def root():
     return {"message": "Bienvenido a la API de mi aplicación de fitness"}
 
+# Habilitar CORS para el frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

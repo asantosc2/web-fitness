@@ -1,8 +1,25 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { PrivateRoute } from "./routes/PrivateRoute";
+import Inicio from "./pages/Inicio";
+import Login from "./pages/Login";
+import Dashboard from "./pages/Dashboard";
+
 function App() {
   return (
-    <div className="text-3xl text-blue-600 text-center mt-10">
-      Plataforma Web Fitness
-    </div>
+    <AuthProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Inicio />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/dashboard" element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          } />
+        </Routes>
+      </BrowserRouter>
+    </AuthProvider>
   );
 }
 
