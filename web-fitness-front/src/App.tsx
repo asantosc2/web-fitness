@@ -4,6 +4,9 @@ import { PrivateRoute } from "./routes/PrivateRoute";
 import Inicio from "./pages/Inicio";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Registro from "./pages/Registro";
+
+
 
 function App() {
   return (
@@ -12,6 +15,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Inicio />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/registro" element={<Registro />} />
           <Route path="/dashboard" element={
             <PrivateRoute>
               <Dashboard />

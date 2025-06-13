@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import fondoLanding from "../assets/fondo-landing.jpg";
+import Navbar from "../components/Navbar";
 import { useAuth } from "../context/AuthContext";
 
 export default function Login() {
@@ -7,6 +9,7 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,16 +24,50 @@ export default function Login() {
       login(data.access_token, data.usuario);
       navigate("/dashboard");
     } else {
-      alert("Credenciales inválidas");
+      setError("Credenciales inválidas");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="max-w-md mx-auto mt-10 space-y-4">
-      <h2 className="text-2xl font-bold text-center">Iniciar sesión</h2>
-      <input className="border p-2 w-full" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} />
-      <input className="border p-2 w-full" type="password" placeholder="Contraseña" value={password} onChange={(e) => setPassword(e.target.value)} />
-      <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded">Entrar</button>
-    </form>
+    <div
+      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: `url(${fondoLanding})` }}
+    >
+      <Navbar />
+      <div className="bg-black bg-opacity-60 absolute inset-0"></div>
+      <form
+        onSubmit={handleSubmit}
+        className="relative bg-white bg-opacity-90 shadow-lg rounded-lg p-8 max-w-md w-full"
+      >
+        <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">
+          Iniciar Sesión en Liftio
+        </h2>
+
+        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+
+        <input
+          className="border p-3 rounded-md w-full mb-4"
+          placeholder="Email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          className="border p-3 rounded-md w-full mb-4"
+          placeholder="Contraseña"
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button
+          type="submit"
+          className="bg-blue-600 text-white px-4 py-3 rounded-md w-full font-semibold hover:bg-blue-700 transition"
+        >
+          Entrar
+        </button>
+      </form>
+    </div>
   );
 }
