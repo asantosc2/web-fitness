@@ -20,10 +20,17 @@ class Ejercicio(SQLModel, table=True):
     nombre: str
     grupo_muscular: str
     tipo_equipo: str     
-    imagen_url: Optional[str] = None
-    video_url: Optional[str] = None
     descripcion: Optional[str] = None
     usuario_id: Optional[int] = Field(default=None, foreign_key="usuario.id")
+
+    fotos: List["EjercicioFoto"] = Relationship(back_populates="ejercicio")
+
+class EjercicioFoto(SQLModel, table=True):
+    __tablename__ = "ejercicio_foto"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    url: str
+    ejercicio_id: int = Field(foreign_key="ejercicio.id")
+    ejercicio: Optional["Ejercicio"] = Relationship(back_populates="fotos")
 
 class Rutina(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -58,6 +65,7 @@ class Sesion(SQLModel, table=True):
     nota: Optional[str] = None
 
     ejercicios: List["SesionEjercicio"] = Relationship(back_populates="sesion")
+
 
 class SesionEjercicio(SQLModel, table=True):
     __tablename__ = "sesion_ejercicio"

@@ -85,20 +85,28 @@ class RestablecerPasswordRequest(BaseModel):
     token: str
     nueva_password: str
 
+
+class EjercicioFotoRead(BaseModel):
+    id: int
+    url: str
+
+    class Config:
+        from_attributes = True
+
 class EjercicioBase(BaseModel):
     nombre: str
     grupo_muscular: str
     tipo_equipo: str
-    imagen_url: Optional[str] = None
     video_url: Optional[str] = None
     descripcion: Optional[str] = None
 
 class EjercicioCreate(EjercicioBase):
-    pass
+    fotos: Optional[List[str]] = []  # lista de URLs
 
 class EjercicioRead(EjercicioBase):
     id: int
     usuario_id: Optional[int]
+    fotos: List[EjercicioFotoRead] = []
 
     class Config:
         from_attributes = True
@@ -107,9 +115,9 @@ class EjercicioUpdate(BaseModel):
     nombre: Optional[str] = None
     grupo_muscular: Optional[str] = None
     tipo_equipo: Optional[str] = None
-    imagen_url: Optional[str] = None
     video_url: Optional[str] = None
     descripcion: Optional[str] = None
+    fotos: Optional[List[str]] = None
 
 # Crear rutina (entrada del usuario)
 class RutinaCreate(BaseModel):

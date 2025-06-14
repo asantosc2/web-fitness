@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
-from app.models import Ejercicio, Usuario
+from app.models import Ejercicio, Usuario, EjercicioFoto
 from app.schemas import EjercicioCreate, EjercicioRead, EjercicioUpdate
 from app.dependencies import get_current_user, get_session
 
@@ -13,17 +13,24 @@ def crear_ejercicio(
     session: Session = Depends(get_session),
     current_user: Usuario = Depends(get_current_user)
 ):
-    # Si no es admin, ignorar imagen_url y video_url
-    data = ejercicio.dict()
+    data = ejercicio.dict(exclude={"fotos"})
     if not current_user.is_admin:
-        data["imagen_url"] = None
         data["video_url"] = None
 
-    nuevo_ejercicio = Ejercicio(**data, usuario_id=current_user.id)
-    session.add(nuevo_ejercicio)
+    nuevo = Ejercicio(**data, usuario_id=current_user.id)
+    session.add(nuevo)
     session.commit()
-    session.refresh(nuevo_ejercicio)
-    return nuevo_ejercicio
+    session.refresh(nuevo)
+
+    # Añadir fotos si las hay
+    for url in ejercicio.fotos or []:
+        foto = EjercicioFoto(url=url, ejercicio_id=nuevo.id)
+        session.add(foto)
+
+    session.commit()
+    session.refresh(nuevo)
+    return nuevo
+
 
 @router.get("/ejercicios", response_model=List[EjercicioRead])
 def listar_ejercicios(
@@ -65,11 +72,11 @@ def actualizar_ejercicio(
     if not ejercicio:
         raise HTTPException(status_code=404, detail="Ejercicio no encontrado")
 
-    # Verificar permisos
     if not current_user.is_admin and ejercicio.usuario_id != current_user.id:
         raise HTTPException(status_code=403, detail="No tienes permiso para modificar este ejercicio")
 
-    for clave, valor in datos.dict(exclude_unset=True).items():
+    # Excluir fotos de los datos actualizables
+    for clave, valor in datos.dict(exclude_unset=True, exclude={"fotos"}).items():
         setattr(ejercicio, clave, valor)
 
     session.add(ejercicio)
