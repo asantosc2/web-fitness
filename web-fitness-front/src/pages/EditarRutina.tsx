@@ -124,7 +124,7 @@ export default function EditarRutina() {
     setSeries(prev => ({ ...prev, [rutinaEjId]: lista }));
   };
 
-  const eliminarSerie = (rutinaEjId: number, serieId?: number, index?: number) => {
+  const eliminarSerie = (rutinaEjId: number, index?: number) => {
     if (index === undefined) return;
     const confirmar = confirm("¿Seguro que quieres eliminar esta serie?");
     if (!confirmar) return;
@@ -341,7 +341,7 @@ export default function EditarRutina() {
                               const val = parseInt(e.target.value);
                               if (!isNaN(val)) actualizarCampoSerie(ej.id, idx, "repeticiones", val);
                             }} className="border rounded p-1" />
-                            <button onClick={() => eliminarSerie(ej.id, s.id, idx)} className="text-red-500 text-xs hover:underline">🗑</button>
+                            <button onClick={() => eliminarSerie(ej.id, idx)} className="text-red-500 text-xs hover:underline">🗑</button>
                           </div>
                         ))}
 
