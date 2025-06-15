@@ -4,6 +4,7 @@ import { useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import { useNavigate } from "react-router-dom";
+import { DragDropContext, Draggable, Droppable, type DropResult } from "@hello-pangea/dnd";
 
 
 interface Serie {
@@ -74,26 +75,6 @@ export default function SesionDetalle() {
             .catch(err => console.error("Error al cargar sesión", err));
     }, [id, estado.token]);
 
-    const actualizarSerie = async (
-        ejercicioIndex: number,
-        serieIndex: number,
-        campo: "peso" | "repeticiones",
-        valor: number
-    ) => {
-        const copia = [...ejercicios];
-        const serie = copia[ejercicioIndex].series_detalle[serieIndex];
-        serie[campo] = valor;
-        setEjercicios(copia);
-
-        await fetch(`http://localhost:8000/sesion-serie/${serie.id}`, {
-            method: "PUT",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${estado.token}`,
-            },
-            body: JSON.stringify({ [campo]: valor }),
-        });
-    };
 
     const añadirSerie = async (sesionEjercicioId: number, index: number) => {
         const nueva = {
@@ -177,12 +158,44 @@ export default function SesionDetalle() {
         setEjercicioSeleccionado(null);
         setFiltro("");
     };
+    const guardarSeriesSesion = async () => {
+        for (const ej of ejercicios) {
+            for (const s of ej.series_detalle) {
+                await fetch(`http://localhost:8000/sesion-serie/${s.id}`, {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${estado.token}`,
+                    },
+                    body: JSON.stringify({
+                        peso: Number(s.peso),
+                        repeticiones: Number(s.repeticiones),
+                    }),
+                });
+            }
+        }
+    };
 
     const finalizarSesion = async () => {
         const confirmar = confirm("¿Deseas finalizar esta sesión y actualizar la rutina base?");
         if (!confirmar || !id) return;
 
         try {
+            await guardarSeriesSesion(); // ✅ Guardar cambios antes de enviar
+            // 🔄 Guardar orden de los ejercicios
+            await fetch(`http://localhost:8000/sesiones/${id}/orden-ejercicios`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${estado.token}`,
+                },
+                body: JSON.stringify(
+                    ejercicios.map((ej) => ({
+                        sesion_ejercicio_id: ej.id,
+                        nuevo_orden: ej.orden,
+                    }))
+                ),
+            });
             const res = await fetch(`http://localhost:8000/sesiones/${id}/actualizar-rutina`, {
                 method: "POST",
                 headers: {
@@ -193,12 +206,13 @@ export default function SesionDetalle() {
             if (!res.ok) throw new Error("Error al actualizar la rutina");
 
             alert("✅ Rutina actualizada correctamente.");
-            navigate("/rutinas"); // Puedes cambiar la ruta a donde quieras redirigir
+            navigate("/rutinas");
         } catch (err) {
             console.error(err);
             alert("❌ Error al actualizar la rutina desde la sesión.");
         }
     };
+
 
     const cancelarSesion = async () => {
         const confirmar = confirm("¿Seguro que quieres cancelar esta sesión? Se eliminará completamente.");
@@ -221,8 +235,13 @@ export default function SesionDetalle() {
             alert("❌ Error al cancelar la sesión.");
         }
     };
-
-
+    const handleDragEnd = (result: DropResult) => {
+        if (!result.destination || result.destination.index === result.source.index) return;
+        const copia = [...ejercicios];
+        const [movido] = copia.splice(result.source.index, 1);
+        copia.splice(result.destination.index, 0, movido);
+        setEjercicios(copia.map((e, i) => ({ ...e, orden: i + 1 })));
+    };
 
     return (
         <div className="min-h-screen bg-gray-100 pt-24 px-6">
@@ -234,79 +253,101 @@ export default function SesionDetalle() {
                     <p className="text-center text-gray-500">Cargando ejercicios...</p>
                 ) : (
                     <>
-                        {ejercicios.map((ej, i) => (
-                            <div key={ej.id} className="bg-white p-4 rounded shadow mb-4">
-                                <div className="flex justify-between items-center">
-                                    <h2 className="font-semibold text-blue-700 text-lg">{ej.ejercicio.nombre}</h2>
-                                    <button
-                                        onClick={() => eliminarEjercicio(ej.id)}
-                                        className="text-red-600 text-sm hover:underline"
-                                    >
-                                        🗑 Eliminar ejercicio
-                                    </button>
-                                </div>
+                        <DragDropContext onDragEnd={handleDragEnd}>
+                            <Droppable droppableId="ejercicios-droppable">
+                                {(provided) => (
+                                    <div ref={provided.innerRef} {...provided.droppableProps}>
+                                        {ejercicios.map((ej, i) => (
+                                            <Draggable key={ej.id} draggableId={ej.id.toString()} index={i}>
+                                                {(provided) => (
+                                                    <div
+                                                        ref={provided.innerRef}
+                                                        {...provided.draggableProps}
+                                                        {...provided.dragHandleProps}
+                                                        className="bg-white p-4 rounded shadow mb-4"
+                                                    >
+                                                        <div className="flex justify-between items-center">
+                                                            <h2 className="font-semibold text-blue-700 text-lg">{ej.ejercicio.nombre}</h2>
+                                                            <button
+                                                                onClick={() => eliminarEjercicio(ej.id)}
+                                                                className="text-red-600 text-sm hover:underline"
+                                                            >
+                                                                🗑 Eliminar ejercicio
+                                                            </button>
+                                                        </div>
 
-                                <p className="text-sm text-gray-500 mb-2">Grupo: {ej.ejercicio.grupo_muscular}</p>
+                                                        <p className="text-sm text-gray-500 mb-2">Grupo: {ej.ejercicio.grupo_muscular}</p>
 
-                                <div className="grid grid-cols-4 font-semibold text-sm mt-2 text-gray-600">
-                                    <span>Serie</span>
-                                    <span>Peso</span>
-                                    <span>Reps</span>
-                                    <span></span>
-                                </div>
+                                                        <div className="grid grid-cols-4 font-semibold text-sm mt-2 text-gray-600">
+                                                            <span>Serie</span>
+                                                            <span>Peso</span>
+                                                            <span>Reps</span>
+                                                            <span></span>
+                                                        </div>
 
-                                {ej.series_detalle.map((s, idx) => (
-                                    <div key={s.id} className={`grid grid-cols-5 gap-2 my-1 items-center ${s.completada ? 'bg-green-100' : ''}`}>
-                                        <span className="text-sm">{s.numero}</span>
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            value={s.peso === null || isNaN(s.peso) ? "" : s.peso}
-                                            onChange={(e) => {
-                                                const copia = [...ejercicios];
-                                                copia[i].series_detalle[idx].peso = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                                                setEjercicios(copia);
-                                            }}
-                                            className="border rounded p-1"
-                                        />
-                                        <input
-                                            type="number"
-                                            min={0}
-                                            value={s.repeticiones === null || isNaN(s.repeticiones) ? "" : s.repeticiones}
-                                            onChange={(e) => {
-                                                const copia = [...ejercicios];
-                                                copia[i].series_detalle[idx].repeticiones = e.target.value === "" ? 0 : parseInt(e.target.value);
-                                                setEjercicios(copia);
-                                            }}
-                                            className="border rounded p-1"
-                                        />
-                                        <button
-                                            onClick={() => {
-                                                const copia = [...ejercicios];
-                                                copia[i].series_detalle[idx].completada = !copia[i].series_detalle[idx].completada;
-                                                setEjercicios(copia);
-                                            }}
-                                            className={`text-xs px-2 py-1 rounded ${s.completada ? "bg-green-600 text-white" : "bg-gray-300 text-gray-800"}`}
-                                        >
-                                            {s.completada ? "✔" : "Marcar"}
-                                        </button>
-                                        <button
-                                            onClick={() => eliminarSerie(s.id, i, idx)}
-                                            className="text-red-600 hover:underline text-sm"
-                                        >
-                                            🗑
-                                        </button>
+                                                        {ej.series_detalle.map((s, idx) => (
+                                                            <div
+                                                                key={s.id}
+                                                                className={`grid grid-cols-5 gap-2 my-1 items-center ${s.completada ? 'bg-green-100' : ''}`}
+                                                            >
+                                                                <span className="text-sm">{s.numero}</span>
+                                                                <input
+                                                                    type="number"
+                                                                    min={0}
+                                                                    value={s.peso === null || isNaN(s.peso) ? "" : s.peso}
+                                                                    onChange={(e) => {
+                                                                        const copia = [...ejercicios];
+                                                                        copia[i].series_detalle[idx].peso = e.target.value === "" ? 0 : parseFloat(e.target.value);
+                                                                        setEjercicios(copia);
+                                                                    }}
+                                                                    className="border rounded p-1"
+                                                                />
+                                                                <input
+                                                                    type="number"
+                                                                    min={0}
+                                                                    value={s.repeticiones === null || isNaN(s.repeticiones) ? "" : s.repeticiones}
+                                                                    onChange={(e) => {
+                                                                        const copia = [...ejercicios];
+                                                                        copia[i].series_detalle[idx].repeticiones = e.target.value === "" ? 0 : parseInt(e.target.value);
+                                                                        setEjercicios(copia);
+                                                                    }}
+                                                                    className="border rounded p-1"
+                                                                />
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const copia = [...ejercicios];
+                                                                        copia[i].series_detalle[idx].completada = !copia[i].series_detalle[idx].completada;
+                                                                        setEjercicios(copia);
+                                                                    }}
+                                                                    className={`text-xs px-2 py-1 rounded ${s.completada ? "bg-green-600 text-white" : "bg-gray-300 text-gray-800"}`}
+                                                                >
+                                                                    {s.completada ? "✔" : "Marcar"}
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => eliminarSerie(s.id, i, idx)}
+                                                                    className="text-red-600 hover:underline text-sm"
+                                                                >
+                                                                    🗑
+                                                                </button>
+                                                            </div>
+                                                        ))}
+
+                                                        <button
+                                                            onClick={() => añadirSerie(ej.id, i)}
+                                                            className="text-sm text-green-600 hover:underline mt-2"
+                                                        >
+                                                            ➕ Añadir serie
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </Draggable>
+                                        ))}
+                                        {provided.placeholder}
                                     </div>
-                                ))}
+                                )}
+                            </Droppable>
+                        </DragDropContext>
 
-                                <button
-                                    onClick={() => añadirSerie(ej.id, i)}
-                                    className="text-sm text-green-600 hover:underline mt-2"
-                                >
-                                    ➕ Añadir serie
-                                </button>
-                            </div>
-                        ))}
 
                         <div className="bg-white p-4 rounded shadow mt-8">
                             <h2 className="text-lg font-semibold text-gray-700 mb-4">➕ Añadir nuevo ejercicio</h2>
