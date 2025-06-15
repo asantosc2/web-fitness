@@ -110,16 +110,31 @@ def copiar_rutina(
         select(RutinaEjercicio).where(RutinaEjercicio.rutina_id == rutina.id)
     ).all()
 
-    for e in ejercicios:
-        nuevo = RutinaEjercicio(
+    for ej in ejercicios:
+        nuevo_ej = RutinaEjercicio(
             rutina_id=copia_rutina.id,
-            ejercicio_id=e.ejercicio_id,
-            orden=e.orden,
-            series=e.series,
-            repeticiones=e.repeticiones,
-            comentarios=e.comentarios
+            ejercicio_id=ej.ejercicio_id,
+            orden=ej.orden,
+            series=ej.series,
+            repeticiones=ej.repeticiones,
+            comentarios=ej.comentarios
         )
-        session.add(nuevo)
+        session.add(nuevo_ej)
+        session.flush()  # importante para obtener nuevo_ej.id
+
+        # 3. Copiar las series de este ejercicio
+        series = session.exec(
+            select(RutinaSerie).where(RutinaSerie.rutina_ejercicio_id == ej.id)
+        ).all()
+
+        for s in series:
+            nueva_serie = RutinaSerie(
+                rutina_ejercicio_id=nuevo_ej.id,
+                numero=s.numero,
+                repeticiones=s.repeticiones,
+                peso=s.peso
+            )
+            session.add(nueva_serie)
 
     session.commit()
     return copia_rutina
