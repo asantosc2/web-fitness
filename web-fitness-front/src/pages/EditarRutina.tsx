@@ -397,7 +397,6 @@ export default function EditarRutina() {
                 (!equipoFiltro || e.tipo_equipo === equipoFiltro)
               )
               .sort((a, b) => a.nombre.localeCompare(b.nombre))
-              .slice(0, 10)
               .map(e => (
                 <div
                   key={e.id}
