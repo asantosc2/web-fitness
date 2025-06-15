@@ -1,7 +1,7 @@
 #openfood.py
 import httpx
 
-async def buscar_alimentos_openfood(query: str, limit: int =10):
+async def buscar_alimentos_openfood(query: str, limit: int =100):
     url = "https://world.openfoodfacts.org/cgi/search.pl"
     params = {
         "search_terms": query,

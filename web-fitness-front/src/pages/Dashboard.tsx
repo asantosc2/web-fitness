@@ -41,7 +41,7 @@ export default function Dashboard() {
         </button>
 
         <button
-          onClick={() => navigate("/nutricion")}
+          onClick={() => navigate("/consulta-nutricional")}
           className="bg-white border border-gray-300 hover:border-blue-500 shadow rounded-lg p-6 text-center transition"
         >
           <h2 className="text-xl font-semibold text-gray-800">Consulta nutricional</h2>
