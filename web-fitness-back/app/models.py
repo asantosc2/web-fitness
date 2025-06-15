@@ -15,6 +15,8 @@ class Usuario(SQLModel, table=True):
     token_recuperacion: Optional[str] = Field(default=None, index=True)
     token_expira: Optional[datetime] = None
 
+    rutinas: List["Rutina"] = Relationship(sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+
 class Ejercicio(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
@@ -77,7 +79,10 @@ class Sesion(SQLModel, table=True):
     rutina_id: Optional[int] = Field(default=None, foreign_key="rutina.id")
     nota: Optional[str] = None
 
-    ejercicios: List["SesionEjercicio"] = Relationship(back_populates="sesion")
+    ejercicios: List["SesionEjercicio"] = Relationship(
+        back_populates="sesion",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}  # ✅ Se eliminan ejercicios si se borra la sesión
+        )
 
 
 class SesionEjercicio(SQLModel, table=True):
@@ -94,6 +99,11 @@ class SesionEjercicio(SQLModel, table=True):
     sesion: Optional[Sesion] = Relationship(back_populates="ejercicios")
     ejercicio: Optional[Ejercicio] = Relationship()
 
+    series_detalle: List["SesionSerie"] = Relationship(
+        back_populates="sesion_ejercicio",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+
 class SesionSerie(SQLModel, table=True):
     __tablename__ = "sesion_serie"
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -101,6 +111,8 @@ class SesionSerie(SQLModel, table=True):
     numero: int
     repeticiones: int
     peso: float
+
+    sesion_ejercicio: Optional[SesionEjercicio] = Relationship(back_populates="series_detalle")
 
 class Progreso(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
