@@ -272,3 +272,82 @@ def listar_ejercicios_de_sesion(
         .options(selectinload(SesionEjercicio.ejercicio))  # Carga datos del ejercicio
     ).all()
     return ejercicios
+
+
+@router.post("/sesiones/{id}/actualizar-rutina")
+def actualizar_rutina_desde_sesion(
+    id: int,
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_user)
+):
+    sesion = session.get(Sesion, id)
+    if not sesion or sesion.usuario_id != current_user.id:
+        raise HTTPException(status_code=403, detail="No tienes permiso para modificar esta sesión")
+
+    if not sesion.rutina_id:
+        raise HTTPException(status_code=400, detail="Esta sesión no está vinculada a ninguna rutina")
+
+    rutina = session.get(Rutina, sesion.rutina_id)
+    if not rutina:
+        raise HTTPException(status_code=404, detail="Rutina asociada no encontrada")
+
+    # 🔁 1. Eliminar ejercicios y series anteriores de la rutina
+    ejercicios_anteriores = session.exec(
+        select(RutinaEjercicio).where(RutinaEjercicio.rutina_id == rutina.id)
+    ).all()
+
+    for re in ejercicios_anteriores:
+        series = session.exec(
+            select(RutinaSerie).where(RutinaSerie.rutina_ejercicio_id == re.id)
+        ).all()
+        for s in series:
+            session.delete(s)
+        session.delete(re)
+
+    session.commit()
+
+    # ➕ 2. Copiar los nuevos ejercicios desde la sesión
+    ejercicios_sesion = session.exec(
+        select(SesionEjercicio).where(SesionEjercicio.sesion_id == sesion.id)
+    ).all()
+
+    for ej in ejercicios_sesion:
+        nuevo = RutinaEjercicio(
+            rutina_id=rutina.id,
+            ejercicio_id=ej.ejercicio_id,
+            orden=ej.orden,
+            comentarios=ej.comentarios
+        )
+        session.add(nuevo)
+        session.flush()
+
+        series = session.exec(
+            select(SesionSerie).where(SesionSerie.sesion_ejercicio_id == ej.id)
+        ).all()
+
+        for s in series:
+            nueva_serie = RutinaSerie(
+                rutina_ejercicio_id=nuevo.id,
+                numero=s.numero,
+                repeticiones=s.repeticiones,
+                peso=s.peso
+            )
+            session.add(nueva_serie)
+
+    session.commit()
+
+    return {"mensaje": "Rutina actualizada correctamente desde la sesión"}
+
+@router.delete("/sesiones/{id}", status_code=204)
+def eliminar_sesion_completa(
+    id: int,
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_user)
+):
+    sesion = session.get(Sesion, id)
+    if not sesion or sesion.usuario_id != current_user.id:
+        raise HTTPException(status_code=403, detail="No tienes permiso para eliminar esta sesión")
+
+    session.delete(sesion)
+    session.commit()
+    return {"mensaje": f"Sesión con ID {id} eliminada correctamente"}
