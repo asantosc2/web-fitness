@@ -351,3 +351,30 @@ def eliminar_sesion_completa(
     session.delete(sesion)
     session.commit()
     return {"mensaje": f"Sesión con ID {id} eliminada correctamente"}
+
+@router.put("/sesiones/{id}/orden-ejercicios")
+def actualizar_orden_sesion_ejercicios(
+    id: int,
+    orden_data: list[dict],
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_user)
+):
+    sesion = session.get(Sesion, id)
+    if not sesion:
+        raise HTTPException(status_code=404, detail="Sesión no encontrada")
+    if sesion.usuario_id != current_user.id:
+        raise HTTPException(status_code=403, detail="No autorizado")
+
+    for item in orden_data:
+        sesion_ejercicio_id = item.get("sesion_ejercicio_id")
+        nuevo_orden = item.get("nuevo_orden")
+        if sesion_ejercicio_id is None or nuevo_orden is None:
+            continue
+
+        ejercicio = session.get(SesionEjercicio, sesion_ejercicio_id)
+        if ejercicio and ejercicio.sesion_id == sesion.id:
+            ejercicio.orden = nuevo_orden
+            session.add(ejercicio)
+
+    session.commit()
+    return {"message": "Orden actualizado correctamente"}
