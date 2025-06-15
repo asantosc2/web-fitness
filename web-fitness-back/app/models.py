@@ -50,8 +50,6 @@ class RutinaEjercicio(SQLModel, table=True):
     rutina_id: int = Field(foreign_key="rutina.id")
     ejercicio_id: int = Field(foreign_key="ejercicio.id")
     orden: int
-    series: int
-    repeticiones: int
     comentarios: Optional[str] = Field(default=None)
 
     rutina: Optional[Rutina] = Relationship(back_populates="ejercicios")

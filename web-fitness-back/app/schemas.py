@@ -152,16 +152,18 @@ class RutinaUpdate(BaseModel):
 class RutinaEjercicioCreate(BaseModel):
     ejercicio_id: int
     orden: int
-    series: int
-    repeticiones: int
     comentarios: Optional[str] = None
 
-    @field_validator("orden", "series", "repeticiones")
+    @field_validator("orden")
     @classmethod
-    def mayores_que_cero(cls, v):
+    def orden_positivo(cls, v):
         if v < 1:
-            raise ValueError("El valor debe ser mayor que cero")
-        return v   
+            raise ValueError("El orden debe ser mayor que cero")
+        return v
+
+class RutinaOrdenUpdate(BaseModel):
+    id: int
+    orden: int
 
 # --- Series de una rutina ---
 class RutinaSerieCreate(BaseModel):
@@ -206,19 +208,20 @@ class RutinaEjercicioRead(BaseModel):
     rutina_id: int
     ejercicio_id: int
     orden: int
-    series: int
-    repeticiones: int
-    comentarios: Optional[str] = None
-    ejercicio: EjercicioRead  # 🔥 Añadimos el ejercicio completo
+    comentarios: Optional[str]
+    ejercicio: EjercicioRead
 
     class Config:
         from_attributes = True
 
+class RutinaSerieUpdate(BaseModel):
+    peso: Optional[float] = None
+    repeticiones: Optional[int] = None
+
+
 # Actualizar una fila concreta
 class RutinaEjercicioUpdate(BaseModel):
     orden: Optional[int] = None
-    series: Optional[int] = None
-    repeticiones: Optional[int] = None
     comentarios: Optional[str] = None
 
 class SesionCreate(BaseModel):

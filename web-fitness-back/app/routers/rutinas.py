@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends, HTTPException
+#rutinas.py
+from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
 from app.models import Rutina, RutinaEjercicio, Ejercicio, RutinaSerie, SesionEjercicio, Usuario
 from sqlalchemy.orm import selectinload
 from app.schemas import (
-    RutinaCreate, RutinaRead, RutinaSerieRead, RutinaUpdate,
+    RutinaCreate, RutinaOrdenUpdate, RutinaRead, RutinaSerieRead, RutinaUpdate,
     RutinaEjercicioCreate, RutinaEjercicioRead, RutinaEjercicioUpdate
 )
 from app.dependencies import get_current_user, get_session
@@ -91,10 +92,11 @@ def copiar_rutina(
     rutina = session.get(Rutina, id)
     if not rutina:
         raise HTTPException(status_code=404, detail="Rutina no encontrada")
+
     if not rutina.es_defecto:
         raise HTTPException(status_code=403, detail="Solo se pueden copiar rutinas públicas")
 
-    # 1. Copiar la rutina
+    # 1. Copiar la rutina base
     copia_rutina = Rutina(
         nombre=rutina.nombre,
         descripcion=rutina.descripcion,
@@ -105,31 +107,30 @@ def copiar_rutina(
     session.commit()
     session.refresh(copia_rutina)
 
-    # 2. Copiar los ejercicios asociados
+    # 2. Obtener ejercicios asociados
     ejercicios = session.exec(
         select(RutinaEjercicio).where(RutinaEjercicio.rutina_id == rutina.id)
     ).all()
 
-    for ej in ejercicios:
-        nuevo_ej = RutinaEjercicio(
+    for e in ejercicios:
+        # 3. Crear copia del ejercicio
+        nuevo_ejercicio = RutinaEjercicio(
             rutina_id=copia_rutina.id,
-            ejercicio_id=ej.ejercicio_id,
-            orden=ej.orden,
-            series=ej.series,
-            repeticiones=ej.repeticiones,
-            comentarios=ej.comentarios
+            ejercicio_id=e.ejercicio_id,
+            orden=e.orden,
+            comentarios=e.comentarios
         )
-        session.add(nuevo_ej)
-        session.flush()  # importante para obtener nuevo_ej.id
+        session.add(nuevo_ejercicio)
+        session.flush()  # Para obtener nuevo_ejercicio.id
 
-        # 3. Copiar las series de este ejercicio
+        # 4. Copiar las series de este ejercicio
         series = session.exec(
-            select(RutinaSerie).where(RutinaSerie.rutina_ejercicio_id == ej.id)
+            select(RutinaSerie).where(RutinaSerie.rutina_ejercicio_id == e.id)
         ).all()
 
         for s in series:
             nueva_serie = RutinaSerie(
-                rutina_ejercicio_id=nuevo_ej.id,
+                rutina_ejercicio_id=nuevo_ejercicio.id,
                 numero=s.numero,
                 repeticiones=s.repeticiones,
                 peso=s.peso
@@ -140,10 +141,10 @@ def copiar_rutina(
     return copia_rutina
 
 
-@router.post("/rutinas/{id}/ejercicios", response_model=List[RutinaEjercicioRead])
-def agregar_ejercicios_a_rutina(
+@router.post("/rutinas/{id}/ejercicios", response_model=RutinaEjercicioRead)
+def agregar_ejercicio_a_rutina(
     id: int,
-    ejercicios: List[RutinaEjercicioCreate],
+    ejercicio_data: RutinaEjercicioCreate,
     session: Session = Depends(get_session),
     current_user: Usuario = Depends(get_current_user)
 ):
@@ -153,19 +154,15 @@ def agregar_ejercicios_a_rutina(
     if rutina.usuario_id != current_user.id:
         raise HTTPException(status_code=403, detail="No tienes permiso para modificar esta rutina")
 
-    nuevas_asociaciones = []
-    for ejercicio_data in ejercicios:
-        ejercicio = session.get(Ejercicio, ejercicio_data.ejercicio_id)
-        if not ejercicio:
-            raise HTTPException(status_code=404, detail=f"Ejercicio con ID {ejercicio_data.ejercicio_id} no encontrado")
-        nueva_asociacion = RutinaEjercicio(**ejercicio_data.dict(), rutina_id=id)
-        session.add(nueva_asociacion)
-        nuevas_asociaciones.append(nueva_asociacion)
+    ejercicio = session.get(Ejercicio, ejercicio_data.ejercicio_id)
+    if not ejercicio:
+        raise HTTPException(status_code=404, detail=f"Ejercicio con ID {ejercicio_data.ejercicio_id} no encontrado")
 
+    nueva_asociacion = RutinaEjercicio(**ejercicio_data.dict(), rutina_id=id)
+    session.add(nueva_asociacion)
     session.commit()
-    for asociacion in nuevas_asociaciones:
-        session.refresh(asociacion)
-    return nuevas_asociaciones
+    session.refresh(nueva_asociacion)
+    return nueva_asociacion
 
 @router.get("/rutinas/{id}/ejercicios", response_model=List[RutinaEjercicioRead])
 def listar_ejercicios_de_rutina(
@@ -188,6 +185,44 @@ def listar_ejercicios_de_rutina(
     ).all()
     return ejercicios
 
+@router.put("/rutina-ejercicio/orden", status_code=200)
+def actualizar_orden(
+    ordenes: List[RutinaOrdenUpdate] = Body(...),
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_user)
+):
+    if not ordenes:
+        raise HTTPException(status_code=400, detail="Lista de ordenes vacía")
+
+    ids = [o.id for o in ordenes]
+    orden_vals = [o.orden for o in ordenes]
+
+    if len(set(orden_vals)) != len(orden_vals):
+        raise HTTPException(status_code=400, detail="Los valores de orden no pueden repetirse")
+
+    if any(o.orden < 1 for o in ordenes):
+        raise HTTPException(status_code=400, detail="Todos los valores de orden deben ser mayores o iguales a 1")
+
+    ejercicios_db = session.exec(
+        select(RutinaEjercicio).where(RutinaEjercicio.id.in_(ids))
+    ).all()
+
+    if len(ejercicios_db) != len(ordenes):
+        raise HTTPException(status_code=400, detail="Algunos IDs no existen")
+
+    for ej in ejercicios_db:
+        rutina = session.get(Rutina, ej.rutina_id)
+        if not rutina or rutina.usuario_id != current_user.id:
+            raise HTTPException(status_code=403, detail="No tienes permiso para modificar esta rutina")
+
+    for o in ordenes:
+        ej = next((e for e in ejercicios_db if e.id == o.id), None)
+        if ej:
+            ej.orden = o.orden
+            session.add(ej)
+
+    session.commit()
+    return {"mensaje": "Orden actualizado correctamente"}
 
 @router.put("/rutina-ejercicio/{id}", response_model=RutinaEjercicioRead)
 def editar_ejercicio_de_rutina(
@@ -212,7 +247,7 @@ def editar_ejercicio_de_rutina(
     session.refresh(rutina_ejercicio)
     return rutina_ejercicio
 
-@router.delete("/rutina-ejercicio/{id}", status_code=204)
+@router.delete("/rutina-ejercicio/{id}", status_code=200)
 def eliminar_ejercicio_de_rutina(
     id: int,
     session: Session = Depends(get_session),
@@ -230,27 +265,23 @@ def eliminar_ejercicio_de_rutina(
     session.commit()
     return {"mensaje": f"Asociación con ID {id} eliminada correctamente"}
 
-@router.get("/rutinas/{rutina_id}/ejercicios/{rutina_ejercicio_id}/series", response_model=List[RutinaSerieRead])
+@router.get("/rutina-ejercicio/{id}/series", response_model=List[RutinaSerieRead])
 def listar_series_de_rutina_ejercicio(
-    rutina_id: int,
-    rutina_ejercicio_id: int,
+    id: int,
     session: Session = Depends(get_session),
     current_user: Usuario = Depends(get_current_user)
 ):
-    # Verifica que la rutina sea accesible por el usuario
-    rutina = session.get(Rutina, rutina_id)
+    ejercicio = session.get(RutinaEjercicio, id)
+    if not ejercicio:
+        raise HTTPException(status_code=404, detail="Ejercicio no encontrado")
+
+    rutina = session.get(Rutina, ejercicio.rutina_id)
+
     if not rutina:
         raise HTTPException(status_code=404, detail="Rutina no encontrada")
+
     if not rutina.es_defecto and rutina.usuario_id != current_user.id:
-        raise HTTPException(status_code=403, detail="No tienes permiso para ver esta rutina")
+        raise HTTPException(status_code=403, detail="No tienes permiso para ver estas series")
 
-    # Verifica que el ejercicio pertenezca a esa rutina
-    rutina_ej = session.get(RutinaEjercicio, rutina_ejercicio_id)
-    if not rutina_ej or rutina_ej.rutina_id != rutina_id:
-        raise HTTPException(status_code=404, detail="Ejercicio no pertenece a esta rutina")
+    return ejercicio.series_detalle
 
-    series = session.exec(
-        select(RutinaSerie).where(RutinaSerie.rutina_ejercicio_id == rutina_ejercicio_id).order_by(RutinaSerie.numero)
-    ).all()
-
-    return series

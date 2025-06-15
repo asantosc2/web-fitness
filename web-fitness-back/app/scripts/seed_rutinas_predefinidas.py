@@ -3,7 +3,7 @@ from app.db import engine
 from app.models import Rutina, RutinaEjercicio, RutinaSerie
 
 with Session(engine) as session:
-    # Crear la rutina
+    # Crear la rutina principal
     rutina = Rutina(
         nombre="Push Intermedio",
         descripcion="Entrenamiento de empuje para pecho, hombros y tríceps",
@@ -14,7 +14,7 @@ with Session(engine) as session:
     session.commit()
     session.refresh(rutina)
 
-    # Ejercicios con series (peso 0)
+    # Ejercicios con series detalladas
     ejercicios = [
         {
             "ejercicio_id": 21,  # Press banca con barra
@@ -50,11 +50,10 @@ with Session(engine) as session:
             rutina_id=rutina.id,
             ejercicio_id=ej["ejercicio_id"],
             orden=ej["orden"],
-            series=len(ej["series_detalladas"]),
-            repeticiones=0  # reps específicas por serie
+            comentarios=None
         )
         session.add(rutina_ej)
-        session.flush()
+        session.flush()  # necesario para obtener rutina_ej.id
 
         for serie in ej["series_detalladas"]:
             session.add(RutinaSerie(
@@ -67,3 +66,4 @@ with Session(engine) as session:
     session.commit()
 
 print("✅ Rutina 'Push Intermedio' creada correctamente con series peso 0.")
+
