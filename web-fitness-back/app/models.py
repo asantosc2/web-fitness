@@ -36,7 +36,7 @@ class Rutina(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
     descripcion: Optional[str] = Field(default=None, nullable=True)
-    usuario_id: int = Field(foreign_key="usuario.id")
+    usuario_id: Optional[int] = Field(default=None, foreign_key="usuario.id")
     fecha_creacion: datetime = Field(default_factory=datetime.utcnow)
     es_defecto: bool = False
 
@@ -52,10 +52,25 @@ class RutinaEjercicio(SQLModel, table=True):
     orden: int
     series: int
     repeticiones: int
-    comentarios: Optional[str] = Field(default=None)   
+    comentarios: Optional[str] = Field(default=None)
 
     rutina: Optional[Rutina] = Relationship(back_populates="ejercicios")
-    ejercicio: Optional[Ejercicio] = Relationship()
+    ejercicio: Optional["Ejercicio"] = Relationship()
+
+    series_detalle: List["RutinaSerie"] = Relationship(
+        back_populates="rutina_ejercicio",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
+
+class RutinaSerie(SQLModel, table=True):
+    __tablename__ = "rutina_serie"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    rutina_ejercicio_id: int = Field(foreign_key="rutina_ejercicio.id")
+    numero: int  
+    repeticiones: int
+    peso: float
+
+    rutina_ejercicio: Optional[RutinaEjercicio] = Relationship(back_populates="series_detalle")
 
 class Sesion(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
@@ -80,6 +95,14 @@ class SesionEjercicio(SQLModel, table=True):
 
     sesion: Optional[Sesion] = Relationship(back_populates="ejercicios")
     ejercicio: Optional[Ejercicio] = Relationship()
+
+class SesionSerie(SQLModel, table=True):
+    __tablename__ = "sesion_serie"
+    id: Optional[int] = Field(default=None, primary_key=True)
+    sesion_ejercicio_id: int = Field(foreign_key="sesion_ejercicio.id")
+    numero: int
+    repeticiones: int
+    peso: float
 
 class Progreso(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)

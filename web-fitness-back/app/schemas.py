@@ -163,7 +163,44 @@ class RutinaEjercicioCreate(BaseModel):
             raise ValueError("El valor debe ser mayor que cero")
         return v   
 
-# Leer la asociación
+# --- Series de una rutina ---
+class RutinaSerieCreate(BaseModel):
+    numero: int
+    repeticiones: int
+    peso: float
+
+    @field_validator("numero", "repeticiones", "peso")
+    @classmethod
+    def validos(cls, v):
+        if v <= 0:
+            raise ValueError("Los valores deben ser mayores que cero")
+        return v
+
+class RutinaSerieRead(BaseModel):
+    id: int
+    numero: int
+    repeticiones: int
+    peso: float
+
+    class Config:
+        from_attributes = True
+
+
+# --- Series de una sesión ---
+class SesionSerieCreate(BaseModel):
+    numero: int
+    repeticiones: int
+    peso: float
+
+class SesionSerieRead(BaseModel):
+    id: int
+    numero: int
+    repeticiones: int
+    peso: float
+
+    class Config:
+        from_attributes = True
+
 class RutinaEjercicioRead(BaseModel):
     id: int
     rutina_id: int
@@ -172,6 +209,7 @@ class RutinaEjercicioRead(BaseModel):
     series: int
     repeticiones: int
     comentarios: Optional[str] = None
+    ejercicio: EjercicioRead  # 🔥 Añadimos el ejercicio completo
 
     class Config:
         from_attributes = True
@@ -197,6 +235,10 @@ class SesionRead(BaseModel):
     class Config:
         from_attributes = True
 
+class SesionSerieUpdate(BaseModel):
+    numero: Optional[int] = None
+    repeticiones: Optional[int] = None
+    peso: Optional[float] = None
 
 # --- SESION EJERCICIO ---
 
@@ -217,6 +259,7 @@ class SesionEjercicioRead(BaseModel):
     repeticiones: int
     peso: float
     comentarios: Optional[str] = None
+    ejercicio: Optional[EjercicioRead]
 
     class Config:
         from_attributes = True
@@ -256,7 +299,7 @@ class AlimentoRead(AlimentoBase):
 
 class ProgresoFotoRead(BaseModel):
     id: int
-    foto: str = Field(alias="ruta") 
+    foto: str
 
     class Config:
         from_attributes = True
