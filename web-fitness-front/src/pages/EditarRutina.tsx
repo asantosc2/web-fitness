@@ -49,6 +49,8 @@ export default function EditarRutina() {
   const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState<Ejercicio | null>(null);
   const [grupoFiltro, setGrupoFiltro] = useState("");
   const [equipoFiltro, setEquipoFiltro] = useState("");
+  const [nombreTemporal, setNombreTemporal] = useState("");
+  const [descripcionTemporal, setDescripcionTemporal] = useState("");
 
 
   useEffect(() => {
@@ -78,6 +80,11 @@ export default function EditarRutina() {
       .then(res => res.json())
       .then(setTodosEjercicios);
   }, [id, estado.token]);
+
+  useEffect(() => {
+    setNombreTemporal(nombre);
+    setDescripcionTemporal(descripcion);
+  }, [nombre, descripcion]);
 
   const cargarSeries = async (rutinaEjercicioId: number, cantidad: number, repeticiones: number) => {
     const res = await fetch(`http://localhost:8000/rutina-ejercicio/${rutinaEjercicioId}/series`, {
@@ -144,7 +151,7 @@ export default function EditarRutina() {
     const confirmar = confirm("¿Seguro que quieres eliminar esta serie?");
     if (!confirmar) return;
 
-    const res = await fetch(`http://localhost:8000/rutina-serie/${serieId}`, {
+    const res = await fetch(`http://localhost:8000/ruta-serie/${serieId}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${estado.token}` },
     });
@@ -224,6 +231,12 @@ export default function EditarRutina() {
     }
   };
 
+  const descartarCambios = () => {
+    setNombreTemporal(nombre);
+    setDescripcionTemporal(descripcion);
+    alert("Los cambios han sido descartados.");
+  };
+
   const guardarCambios = async () => {
     try {
       const res = await fetch(`http://localhost:8000/rutinas/${id}`, {
@@ -232,7 +245,7 @@ export default function EditarRutina() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${estado.token}`,
         },
-        body: JSON.stringify({ nombre, descripcion }),
+        body: JSON.stringify({ nombre: nombreTemporal, descripcion: descripcionTemporal }),
       });
 
       if (!res.ok) {
@@ -241,6 +254,8 @@ export default function EditarRutina() {
         return;
       }
 
+      setNombre(nombreTemporal);
+      setDescripcion(descripcionTemporal);
       alert("✅ Cambios guardados.");
     } catch (err) {
       console.error("Error al guardar:", err);
@@ -279,12 +294,13 @@ export default function EditarRutina() {
         <div className="flex justify-between mb-4">
           <button onClick={() => navigate(-1)} className="text-blue-600 hover:underline">⬅ Atrás</button>
           <button onClick={guardarCambios} className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">💾 Guardar cambios</button>
+          <button onClick={descartarCambios} className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">Descartar cambios</button>
         </div>
 
         <h1 className="text-3xl font-bold text-blue-600 text-center mb-6">Editar rutina</h1>
 
-        <input value={nombre} onChange={(e) => setNombre(e.target.value)} placeholder="Nombre de la rutina" className="w-full border p-2 rounded mb-2" />
-        <textarea value={descripcion} onChange={(e) => setDescripcion(e.target.value)} placeholder="Descripción" className="w-full border p-2 rounded mb-4" />
+        <input value={nombreTemporal} onChange={(e) => setNombreTemporal(e.target.value)} placeholder="Nombre de la rutina" className="w-full border p-2 rounded mb-2" />
+        <textarea value={descripcionTemporal} onChange={(e) => setDescripcionTemporal(e.target.value)} placeholder="Descripción" className="w-full border p-2 rounded mb-4" />
 
         <DragDropContext onDragEnd={({ source, destination }: DropResult) => {
           if (!destination || destination.index === source.index) return;

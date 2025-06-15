@@ -11,6 +11,7 @@ import Rutinas from "./pages/Rutinas";
 import RutinaDetalle from "./pages/RutinaDetalle";
 import RutinaNueva from "./pages/RutinaNueva";
 import EditarRutina from "./pages/EditarRutina";
+import SesionDetalle from "./pages/SesionDetalle";
 
 
 
@@ -29,6 +30,7 @@ function App() {
           <Route path="/rutinas/:id" element={<RutinaDetalle />} />
           <Route path="/rutinas/nueva" element={<PrivateRoute><RutinaNueva /></PrivateRoute>} />
           <Route path="/rutinas/:id/editar" element={<PrivateRoute><EditarRutina /></PrivateRoute>} />
+          <Route path="/sesiones/:id" element={<SesionDetalle />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

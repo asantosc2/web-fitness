@@ -158,7 +158,8 @@ def agregar_ejercicio_a_rutina(
     if not ejercicio:
         raise HTTPException(status_code=404, detail=f"Ejercicio con ID {ejercicio_data.ejercicio_id} no encontrado")
 
-    nueva_asociacion = RutinaEjercicio(**ejercicio_data.dict(), rutina_id=id)
+    datos = ejercicio_data.dict(exclude_unset=True, exclude={"id"})  # 👈 Evita duplicar clave primaria
+    nueva_asociacion = RutinaEjercicio(**datos, rutina_id=id)
     session.add(nueva_asociacion)
     session.commit()
     session.refresh(nueva_asociacion)
