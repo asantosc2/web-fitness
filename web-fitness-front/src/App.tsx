@@ -7,6 +7,10 @@ import Dashboard from "./pages/Dashboard";
 import Registro from "./pages/Registro";
 import Ejercicios from "./pages/Ejercicios";
 import NuevoEjercicio from "./pages/NuevoEjercicio";
+import Rutinas from "./pages/Rutinas";
+import RutinaDetalle from "./pages/RutinaDetalle";
+import RutinaNueva from "./pages/RutinaNueva";
+import EditarRutina from "./pages/EditarRutina";
 
 
 
@@ -21,6 +25,10 @@ function App() {
           <Route path="/ejercicios" element={<PrivateRoute><Ejercicios /></PrivateRoute>} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
           <Route path="/ejercicios/nuevo" element={<PrivateRoute><NuevoEjercicio /></PrivateRoute>} />
+          <Route path="/rutinas" element={<PrivateRoute><Rutinas /></PrivateRoute>} />
+          <Route path="/rutinas/:id" element={<RutinaDetalle />} />
+          <Route path="/rutinas/nueva" element={<PrivateRoute><RutinaNueva /></PrivateRoute>} />
+          <Route path="/rutinas/:id/editar" element={<PrivateRoute><EditarRutina /></PrivateRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

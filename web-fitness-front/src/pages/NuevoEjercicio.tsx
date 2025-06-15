@@ -3,7 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
 const gruposMusculares = [
-  "Bíceps", "Tríceps", "Hombros", "Espalda", "Pecho", "Piernas", "Glúteos", "Abdomen"
+  "Brazos", "Hombros", "Espalda", "Pecho", "Piernas", "Glúteos", "Abdomen"
 ];
 
 const categoriasEquipo = [

@@ -12,7 +12,7 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-100 pt-24 px-6">
       <Navbar />
       <h1 className="text-3xl font-bold mb-8 text-center text-blue-600">
-        ¡Bienvenido, {estado.usuario?.nombre || "usuario"}!
+        ¡Bienvenido/a, {estado.usuario?.nombre || "usuario"}!
       </h1>
 
       <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
