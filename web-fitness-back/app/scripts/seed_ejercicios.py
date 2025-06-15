@@ -1,5 +1,5 @@
 from sqlmodel import Session, SQLModel, create_engine
-from app.models import Ejercicio
+from app.models import Ejercicio, EjercicioFoto
 
 # Configurar la conexión a la base de datos
 engine = create_engine("postgresql://postgres:postgres@localhost:5432/web_fitness")
@@ -21,7 +21,7 @@ ejercicios_brazos = [
             "4. Empuja hacia arriba extendiendo los codos sin bloquearlos.\n"
             "5. Mantén la espalda recta y evita impulsarte con las piernas."
         ),
-        "fotos": []
+        "fotos": ["ejercicios/fondos_banco.png"]
     },
     {
         "nombre": "Press de banca agarre cerrado",
@@ -47,7 +47,7 @@ ejercicios_brazos = [
             "4. Baja la barra lentamente sin bloquear los codos al final.\n"
             "5. Evita balancear el cuerpo o usar impulso."
         ),
-        "fotos": []
+        "fotos": ["ejercicios/curl_biceps_barra.png"]
     },
     {
         "nombre": "Curl de bíceps en polea baja",
@@ -86,7 +86,7 @@ ejercicios_brazos = [
             "4. Vuelve a la posición inicial con control sin mover los codos.\n"
             "5. Mantén los hombros estables y no arquees la espalda."
         ),
-        "fotos": []
+        "fotos": ["ejercicios/extension_triceps_polea.png"]
     },
     {
         "nombre": "Extensión de tríceps con mancuernas",
@@ -152,7 +152,7 @@ ejercicios_espalda = [
             "3. Baja de forma controlada hasta la posición inicial.\n"
             "4. Mantén el torso firme, evitando balanceos para mayor activación muscular."
         ),
-        "fotos": []
+        "fotos": ["ejercicios/dominadas.png"]
     },
     {
         "nombre": "Peso muerto (Barra)",
@@ -165,7 +165,7 @@ ejercicios_espalda = [
             "4. Baja controladamente manteniendo la espalda neutra.\n"
             "5. Evita curvar la espalda durante todo el recorrido."
         ),
-        "fotos": []
+        "fotos": ["ejercicios/peso_muerto.png"]
     },
     {
         "nombre": "Remo inclinado con barra",
@@ -203,7 +203,7 @@ ejercicios_espalda = [
             "4. Baja de forma controlada y evita balanceos.\n"
             "5. Excelente para dar grosor a la espalda."
         ),
-        "fotos": []
+        "fotos": ["ejercicios/remo_t.png"]
     },
     {
         "nombre": "Remo sentado en polea baja",
@@ -655,14 +655,24 @@ ejercicios = [
     *ejercicios_pierna
 ]
 
-# Insertar ejercicios en la base de datos
 with Session(engine) as session:
     for ejercicio_data in ejercicios:
+        # Extraer y eliminar la clave 'fotos' si existe
+        fotos = ejercicio_data.pop("fotos", [])
+        
+        # Crear el ejercicio sin las fotos
         ejercicio = Ejercicio(**ejercicio_data)
+
+        # Asociar fotos si hay alguna
+        ejercicio.fotos = [EjercicioFoto(url=path) for path in fotos]
+
+        # Añadir a la sesión
         session.add(ejercicio)
+
     session.commit()
 
 print("Ejercicios insertados correctamente.")
+
 
 
 
