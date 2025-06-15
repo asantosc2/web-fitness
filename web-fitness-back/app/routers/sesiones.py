@@ -21,9 +21,19 @@ def listar_sesiones(
     current_user: Usuario = Depends(get_current_user)
 ):
     sesiones = session.exec(
-        select(Sesion).where(Sesion.usuario_id == current_user.id).order_by(Sesion.fecha.desc())
+        select(Sesion)
+        .where(Sesion.usuario_id == current_user.id)
+        .order_by(Sesion.fecha.desc())
+        .options(selectinload(Sesion.rutina))
     ).all()
-    return sesiones
+
+    resultado = []
+    for s in sesiones:
+        data = SesionRead.model_validate(s, from_attributes=True)
+        data.nombre_rutina = s.rutina.nombre if s.rutina else None
+        resultado.append(data)
+
+    return resultado
 
 @router.post("/sesiones", response_model=SesionRead)
 def crear_sesion(
@@ -36,11 +46,14 @@ def crear_sesion(
             usuario_id=current_user.id,
             fecha=date.today(),
             rutina_id=sesion_data.rutina_id,
-            nota=sesion_data.nota
         )
         session.add(nueva_sesion)
         session.commit()
         session.refresh(nueva_sesion)
+
+        nombre_rutina = nueva_sesion.rutina.nombre if nueva_sesion.rutina else None
+        resultado = SesionRead.model_validate(nueva_sesion, from_attributes=True)
+        resultado.nombre_rutina = nombre_rutina
 
         if sesion_data.rutina_id:
             ejercicios = session.exec(
@@ -79,7 +92,7 @@ def crear_sesion(
                     session.add(nueva_serie)
 
         session.commit()
-        return nueva_sesion
+        return resultado
     except Exception as err:
         print("❌ Error interno al crear la sesión:")
         traceback.print_exc()

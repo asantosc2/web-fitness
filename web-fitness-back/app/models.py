@@ -77,7 +77,6 @@ class Sesion(SQLModel, table=True):
     usuario_id: int = Field(foreign_key="usuario.id")
     fecha: date
     rutina_id: Optional[int] = Field(default=None, foreign_key="rutina.id")
-    nota: Optional[str] = None
 
     ejercicios: List["SesionEjercicio"] = Relationship(
         back_populates="sesion",

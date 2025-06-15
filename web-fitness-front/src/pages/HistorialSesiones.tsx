@@ -7,7 +7,7 @@ interface Sesion {
   id: number;
   fecha: string;
   rutina_id?: number | null;
-  nota?: string | null;
+  nombre_rutina?: string | null;
 }
 
 export default function HistorialSesiones() {
@@ -58,9 +58,9 @@ export default function HistorialSesiones() {
                   <p className="font-semibold text-gray-800">
                     {new Date(s.fecha).toLocaleDateString()}
                   </p>
-                  {s.nota && (
-                    <p className="text-sm text-gray-500 truncate w-56">{s.nota}</p>
-                  )}
+                  <p className="text-sm text-gray-500 truncate w-56">
+                    {s.nombre_rutina || "Rutina no especificada"}
+                  </p>
                 </div>
                 <button
                   onClick={() => eliminarSesion(s.id)}

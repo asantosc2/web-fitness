@@ -77,7 +77,6 @@ export default function RutinaDetalle() {
         },
         body: JSON.stringify({
           rutina_id: Number(id),
-          nota: "Sesión generada desde la rutina",
         }),
       });
 

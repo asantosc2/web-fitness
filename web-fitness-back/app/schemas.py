@@ -226,14 +226,13 @@ class RutinaEjercicioUpdate(BaseModel):
 
 class SesionCreate(BaseModel):
     rutina_id: Optional[int] = None
-    nota: Optional[str] = None
 
 class SesionRead(BaseModel):
     id: int
     usuario_id: int
     fecha: date
     rutina_id: Optional[int]
-    nota: Optional[str]
+    nombre_rutina: Optional[str] = None
 
     class Config:
         from_attributes = True
