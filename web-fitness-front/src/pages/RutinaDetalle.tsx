@@ -154,9 +154,20 @@ export default function RutinaDetalle() {
   }
 
   return (
+
     <div className="min-h-screen bg-gray-100 pt-24 px-6">
+
       <Navbar />
       <div className="max-w-3xl mx-auto">
+        {/* 🔙 Botón para volver atrás */}
+        <div className="mb-4">
+          <button
+            onClick={() => navigate(-1)}
+            className="text-blue-600 hover:underline"
+          >
+            ⬅ Volver atrás
+          </button>
+        </div>
         <h1 className="text-3xl font-bold text-blue-600 mb-2 text-center">
           {rutina.nombre}
         </h1>

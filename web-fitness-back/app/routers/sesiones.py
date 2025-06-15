@@ -1,10 +1,14 @@
-#sesiones.py
+# sesiones.py
 from fastapi import APIRouter, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
 from datetime import date
-from app.models import RutinaSerie, Sesion, RutinaEjercicio, SesionEjercicio, SesionSerie, Usuario
-from app.schemas import SesionCreate, SesionEjercicioCreate, SesionEjercicioUpdate, SesionRead, SesionEjercicioRead, SesionSerieRead, SesionSerieCreate, SesionSerieUpdate
+from app.models import RutinaSerie, Sesion, Rutina, RutinaEjercicio, SesionEjercicio, SesionSerie, Usuario
+from app.schemas import (
+    SesionCreate, SesionEjercicioCreate, SesionEjercicioUpdate,
+    SesionRead, SesionEjercicioRead, SesionSerieRead,
+    SesionSerieCreate, SesionSerieUpdate
+)
 from app.dependencies import get_current_user, get_session
 from sqlalchemy.orm import selectinload
 
@@ -26,7 +30,6 @@ def crear_sesion(
     session.commit()
     session.refresh(nueva_sesion)
 
-    # 🔹 Obtener ejercicios de la rutina seleccionada
     if sesion_data.rutina_id:
         ejercicios = session.exec(
             select(RutinaEjercicio).where(RutinaEjercicio.rutina_id == sesion_data.rutina_id)
@@ -43,9 +46,8 @@ def crear_sesion(
                 comentarios=e.comentarios
             )
             session.add(copia)
-            session.flush()  # Necesario para tener copia.id
+            session.flush()
 
-            # 🔹 Copiar también las series detalladas
             series_originales = session.exec(
                 select(RutinaSerie).where(RutinaSerie.rutina_ejercicio_id == e.id)
             ).all()
@@ -62,7 +64,6 @@ def crear_sesion(
     session.commit()
     return nueva_sesion
 
-# 🔹 Añadir ejercicios manualmente a una sesión
 @router.post("/sesiones/{id}/ejercicios", response_model=List[SesionEjercicioRead])
 def agregar_ejercicios_a_sesion(
     id: int,
@@ -85,7 +86,6 @@ def agregar_ejercicios_a_sesion(
         session.refresh(ej)
     return nuevos
 
-# 🔹 Editar un ejercicio
 @router.put("/sesion-ejercicio/{id}", response_model=SesionEjercicioRead)
 def actualizar_ejercicio_sesion(
     id: int,
@@ -107,9 +107,24 @@ def actualizar_ejercicio_sesion(
     session.add(ejercicio)
     session.commit()
     session.refresh(ejercicio)
+
+    # 🔁 ACTUALIZAR también los valores en RutinaEjercicio si aplica
+    if sesion.rutina_id:
+        rutina_ejercicio = session.exec(
+            select(RutinaEjercicio).where(
+                RutinaEjercicio.rutina_id == sesion.rutina_id,
+                RutinaEjercicio.ejercicio_id == ejercicio.ejercicio_id
+            )
+        ).first()
+        if rutina_ejercicio:
+            rutina_ejercicio.peso = ejercicio.peso
+            rutina_ejercicio.series = ejercicio.series
+            rutina_ejercicio.repeticiones = ejercicio.repeticiones
+            session.add(rutina_ejercicio)
+            session.commit()
+
     return ejercicio
 
-# 🔹 Eliminar un ejercicio
 @router.delete("/sesion-ejercicio/{id}", status_code=204)
 def eliminar_ejercicio_sesion(
     id: int,
@@ -128,7 +143,6 @@ def eliminar_ejercicio_sesion(
     session.commit()
     return {"mensaje": f"Ejercicio con ID {id} eliminado correctamente"}
 
-# 🔹 Ver series detalladas de un ejercicio en una sesión
 @router.get("/sesion-ejercicio/{id}/series", response_model=List[SesionSerieRead])
 def listar_series_de_ejercicio(
     id: int,
@@ -149,11 +163,10 @@ def listar_series_de_ejercicio(
 
     return series
 
-# 🔹 Editar una serie de una sesión
 @router.put("/sesion-serie/{id}", response_model=SesionSerieRead)
 def actualizar_serie_sesion(
     id: int,
-    datos: SesionSerieCreate,
+    datos: SesionSerieUpdate,
     session: Session = Depends(get_session),
     current_user: Usuario = Depends(get_current_user)
 ):
@@ -162,44 +175,17 @@ def actualizar_serie_sesion(
         raise HTTPException(status_code=404, detail="Serie no encontrada")
 
     sesion_ejercicio = session.get(SesionEjercicio, serie.sesion_ejercicio_id)
-    if not sesion_ejercicio:
-        raise HTTPException(status_code=404, detail="Ejercicio no encontrado")
-
-    sesion = session.get(Sesion, sesion_ejercicio.sesion_id)
+    sesion = session.get(Sesion, sesion_ejercicio.sesion_id) if sesion_ejercicio else None
     if not sesion or sesion.usuario_id != current_user.id:
-        raise HTTPException(status_code=403, detail="No tienes permiso para modificar esta sesión")
+        raise HTTPException(status_code=403, detail="No tienes permiso para modificar esta serie")
 
-    serie.numero = datos.numero
-    serie.repeticiones = datos.repeticiones
-    serie.peso = datos.peso
+    for campo, valor in datos.dict(exclude_unset=True).items():
+        setattr(serie, campo, valor)
 
     session.add(serie)
     session.commit()
     session.refresh(serie)
     return serie
-
-# 🔹 Ver series de un ejercicio de sesión
-@router.get("/sesion-ejercicio/{id}/series", response_model=List[SesionSerieRead])
-def obtener_series_de_sesion_ejercicio(
-    id: int,
-    session: Session = Depends(get_session),
-    current_user: Usuario = Depends(get_current_user)
-):
-    ejercicio = session.get(SesionEjercicio, id)
-    if not ejercicio:
-        raise HTTPException(status_code=404, detail="Ejercicio no encontrado")
-
-    sesion = session.get(Sesion, ejercicio.sesion_id)
-    if not sesion or sesion.usuario_id != current_user.id:
-        raise HTTPException(status_code=403, detail="No tienes permiso para ver esta sesión")
-
-    series = session.exec(
-        select(SesionSerie).where(SesionSerie.sesion_ejercicio_id == id).order_by(SesionSerie.numero)
-    ).all()
-
-    return series
-
-from app.schemas import SesionSerieCreate, SesionSerieRead
 
 @router.post("/sesion-ejercicio/{id}/series", response_model=List[SesionSerieRead])
 def agregar_series_a_ejercicio_de_sesion(
@@ -227,32 +213,6 @@ def agregar_series_a_ejercicio_de_sesion(
         session.refresh(s)
 
     return nuevas
-
-from app.schemas import SesionSerieUpdate
-
-@router.put("/sesion-serie/{id}", response_model=SesionSerieRead)
-def actualizar_serie_sesion(
-    id: int,
-    datos: SesionSerieUpdate,
-    session: Session = Depends(get_session),
-    current_user: Usuario = Depends(get_current_user)
-):
-    serie = session.get(SesionSerie, id)
-    if not serie:
-        raise HTTPException(status_code=404, detail="Serie no encontrada")
-
-    sesion_ejercicio = session.get(SesionEjercicio, serie.sesion_ejercicio_id)
-    sesion = session.get(Sesion, sesion_ejercicio.sesion_id) if sesion_ejercicio else None
-    if not sesion or sesion.usuario_id != current_user.id:
-        raise HTTPException(status_code=403, detail="No tienes permiso para modificar esta serie")
-
-    for campo, valor in datos.dict(exclude_unset=True).items():
-        setattr(serie, campo, valor)
-
-    session.add(serie)
-    session.commit()
-    session.refresh(serie)
-    return serie
 
 @router.delete("/sesion-serie/{id}", status_code=204)
 def eliminar_serie_sesion(
