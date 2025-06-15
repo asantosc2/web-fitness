@@ -77,12 +77,13 @@ class Sesion(SQLModel, table=True):
     usuario_id: int = Field(foreign_key="usuario.id")
     fecha: date
     rutina_id: Optional[int] = Field(default=None, foreign_key="rutina.id")
+    
+    rutina: Optional["Rutina"] = Relationship()  # ✅ ESTO FALTABA
 
     ejercicios: List["SesionEjercicio"] = Relationship(
         back_populates="sesion",
-        sa_relationship_kwargs={"cascade": "all, delete-orphan"}  # ✅ Se eliminan ejercicios si se borra la sesión
-        )
-
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"}
+    )
 
 class SesionEjercicio(SQLModel, table=True):
     __tablename__ = "sesion_ejercicio"

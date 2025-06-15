@@ -21,6 +21,11 @@ interface Ejercicio {
     grupo_muscular: string;
     tipo_equipo?: string;
 }
+interface Sesion {
+    id: number;
+    fecha: string;
+    nombre_rutina?: string | null;
+}
 
 interface SesionEjercicio {
     id: number;
@@ -43,6 +48,19 @@ export default function SesionDetalle() {
     const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState<Ejercicio | null>(null);
     const [grupoSeleccionado, setGrupoSeleccionado] = useState("");
     const [tipoSeleccionado, setTipoSeleccionado] = useState("");
+    const [sesion, setSesion] = useState<Sesion | null>(null);
+
+    useEffect(() => {
+        if (!id) return;
+        fetch(`http://localhost:8000/sesiones`, {
+            headers: { Authorization: `Bearer ${estado.token}` },
+        })
+            .then(res => res.json())
+            .then(data => {
+                const encontrada = data.find((s: Sesion) => s.id === Number(id));
+                setSesion(encontrada || null);
+            });
+    }, [id, estado.token]);
 
 
     useEffect(() => {
@@ -248,6 +266,18 @@ export default function SesionDetalle() {
             <Navbar />
             <div className="max-w-3xl mx-auto">
                 <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center">Sesión de entrenamiento</h1>
+                {sesion && (
+                    <div className="text-center text-gray-600 mb-6">
+                        <p>
+                            <span className="font-semibold">Rutina:</span>{" "}
+                            {sesion.nombre_rutina || "Sin rutina vinculada"}
+                        </p>
+                        <p>
+                            <span className="font-semibold">Fecha:</span>{" "}
+                            {new Date(sesion.fecha).toLocaleDateString()}
+                        </p>
+                    </div>
+                )}
 
                 {ejercicios.length === 0 ? (
                     <p className="text-center text-gray-500">Cargando ejercicios...</p>

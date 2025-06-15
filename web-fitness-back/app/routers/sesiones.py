@@ -50,8 +50,14 @@ def crear_sesion(
         session.add(nueva_sesion)
         session.commit()
         session.refresh(nueva_sesion)
+        nueva_sesion = session.exec(
+            select(Sesion)
+            .where(Sesion.id == nueva_sesion.id)
+            .options(selectinload(Sesion.rutina))
+        ).first()
 
         nombre_rutina = nueva_sesion.rutina.nombre if nueva_sesion.rutina else None
+
         resultado = SesionRead.model_validate(nueva_sesion, from_attributes=True)
         resultado.nombre_rutina = nombre_rutina
 
