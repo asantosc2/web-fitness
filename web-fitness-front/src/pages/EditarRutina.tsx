@@ -44,6 +44,10 @@ export default function EditarRutina() {
   const [descripcion, setDescripcion] = useState("");
   const [ejercicios, setEjercicios] = useState<RutinaEjercicio[]>([]);
   const [series, setSeries] = useState<{ [key: number]: Serie[] }>({});
+  const [originalEjercicios, setOriginalEjercicios] = useState<RutinaEjercicio[]>([]);
+  const [originalSeries, setOriginalSeries] = useState<{ [key: number]: Serie[] }>({});
+  const [originalNombre, setOriginalNombre] = useState("");
+  const [originalDescripcion, setOriginalDescripcion] = useState("");
   const [todosEjercicios, setTodosEjercicios] = useState<Ejercicio[]>([]);
   const [filtroEjercicio, setFiltroEjercicio] = useState("");
   const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState<Ejercicio | null>(null);
@@ -61,6 +65,8 @@ export default function EditarRutina() {
       .then(data => {
         setNombre(data.nombre);
         setDescripcion(data.descripcion || "");
+        setOriginalNombre(data.nombre);
+        setOriginalDescripcion(data.descripcion || "");
       });
 
     fetch(`http://localhost:8000/rutinas/${id}/ejercicios`, {
@@ -69,6 +75,7 @@ export default function EditarRutina() {
       .then(res => res.json())
       .then(data => {
         setEjercicios(data);
+        setOriginalEjercicios(data);
         data.forEach((ej: RutinaEjercicio) => {
           cargarSeries(ej.id, ej.series, ej.repeticiones);
         });
@@ -98,6 +105,7 @@ export default function EditarRutina() {
 
     if (data.length > 0) {
       setSeries(prev => ({ ...prev, [rutinaEjercicioId]: data }));
+      setOriginalSeries(prev => ({ ...prev, [rutinaEjercicioId]: data }));
     } else {
       const nuevasSeries = Array.from({ length: cantidad || 3 }).map((_, i) => ({
         numero: i + 1,
@@ -105,68 +113,28 @@ export default function EditarRutina() {
         peso: 1,
       }));
 
-      const crear = await fetch(`http://localhost:8000/rutina-ejercicio/${rutinaEjercicioId}/series`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${estado.token}`,
-        },
-        body: JSON.stringify(nuevasSeries),
-      });
-
-      if (crear.ok) {
-        const creadas = await crear.json();
-        setSeries(prev => ({ ...prev, [rutinaEjercicioId]: creadas }));
-      }
+      setSeries(prev => ({ ...prev, [rutinaEjercicioId]: nuevasSeries }));
+      setOriginalSeries(prev => ({ ...prev, [rutinaEjercicioId]: nuevasSeries }));
     }
   };
 
-  const actualizarCampoSerie = async (rutinaEjId: number, index: number, campo: "peso" | "repeticiones", valor: number) => {
+  const actualizarCampoSerie = (rutinaEjId: number, index: number, campo: "peso" | "repeticiones", valor: number) => {
     const lista = [...(series[rutinaEjId] || [])];
     lista[index][campo] = valor;
     setSeries(prev => ({ ...prev, [rutinaEjId]: lista }));
-
-    const s = lista[index];
-
-    if (s.id) {
-      const res = await fetch(`http://localhost:8000/rutina-serie/${s.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${estado.token}`,
-        },
-        body: JSON.stringify({ [campo]: valor }),
-      });
-
-      if (!res.ok) {
-        console.error(`❌ Error al actualizar la serie con ID ${s.id}`);
-        const error = await res.json();
-        console.error(error);
-      }
-    }
   };
 
-  const eliminarSerie = async (rutinaEjId: number, serieId?: number, index?: number) => {
-    if (!serieId || index === undefined) return;
+  const eliminarSerie = (rutinaEjId: number, serieId?: number, index?: number) => {
+    if (index === undefined) return;
     const confirmar = confirm("¿Seguro que quieres eliminar esta serie?");
     if (!confirmar) return;
-
-    const res = await fetch(`http://localhost:8000/ruta-serie/${serieId}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${estado.token}` },
-    });
-
-    if (res.ok) {
-      const nuevas = [...(series[rutinaEjId] || [])];
-      nuevas.splice(index, 1);
-      nuevas.forEach((s, i) => (s.numero = i + 1));
-      setSeries(prev => ({ ...prev, [rutinaEjId]: nuevas }));
-    } else {
-      console.error("❌ No se pudo eliminar la serie");
-    }
+    const nuevas = [...(series[rutinaEjId] || [])];
+    nuevas.splice(index, 1);
+    nuevas.forEach((s, i) => (s.numero = i + 1));
+    setSeries(prev => ({ ...prev, [rutinaEjId]: nuevas }));
   };
 
-  const añadirSerie = async (rutinaEjId: number) => {
+  const añadirSerie = (rutinaEjId: number) => {
     const actuales = series[rutinaEjId] || [];
     const nuevaSerie = {
       numero: actuales.length + 1,
@@ -174,66 +142,31 @@ export default function EditarRutina() {
       repeticiones: 10,
     };
 
-    const res = await fetch(`http://localhost:8000/rutina-ejercicio/${rutinaEjId}/series`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${estado.token}`,
-      },
-      body: JSON.stringify([nuevaSerie]),
-    });
-
-    if (res.ok) {
-      const [creada] = await res.json();
-      setSeries(prev => ({ ...prev, [rutinaEjId]: [...actuales, creada] }));
-    }
+    setSeries(prev => ({ ...prev, [rutinaEjId]: [...actuales, nuevaSerie] }));
   };
 
-  const eliminarEjercicio = async (rutinaEjId: number) => {
+  const eliminarEjercicio = (rutinaEjId: number) => {
     const confirmar = confirm("¿Seguro que quieres eliminar este ejercicio y todas sus series?");
     if (!confirmar) return;
-
-    const res = await fetch(`http://localhost:8000/rutina-ejercicio/${rutinaEjId}`, {
-      method: "DELETE",
-      headers: { Authorization: `Bearer ${estado.token}` },
+    setEjercicios(prev => prev.filter(e => e.id !== rutinaEjId));
+    setSeries(prev => {
+      const copia = { ...prev };
+      delete copia[rutinaEjId];
+      return copia;
     });
-
-    if (res.ok) {
-      setEjercicios(prev => prev.filter(e => e.id !== rutinaEjId));
-      setSeries(prev => {
-        const copia = { ...prev };
-        delete copia[rutinaEjId];
-        return copia;
-      });
-    } else {
-      alert("❌ No se pudo eliminar el ejercicio.");
-    }
   };
 
-  const actualizarOrden = async (nuevos: RutinaEjercicio[]) => {
-    const actualizados = nuevos.map((ej, i) => ({ id: ej.id, orden: i + 1 }));
-
-    const res = await fetch("http://localhost:8000/rutina-ejercicio/orden", {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${estado.token}`,
-      },
-      body: JSON.stringify(actualizados),
-    });
-
-    if (res.ok) {
-      setEjercicios(nuevos.map((e, i) => ({ ...e, orden: i + 1 })));
-    } else {
-      const error = await res.json();
-      console.error("❌ Detalle del error:", JSON.stringify(error, null, 2));
-      alert("❌ Error al actualizar el orden");
-    }
+  const actualizarOrden = (nuevos: RutinaEjercicio[]) => {
+    setEjercicios(nuevos.map((e, i) => ({ ...e, orden: i + 1 })));
   };
 
   const descartarCambios = () => {
-    setNombreTemporal(nombre);
-    setDescripcionTemporal(descripcion);
+    setNombreTemporal(originalNombre);
+    setDescripcionTemporal(originalDescripcion);
+    setNombre(originalNombre);
+    setDescripcion(originalDescripcion);
+    setEjercicios(originalEjercicios);
+    setSeries(originalSeries);
     alert("Los cambios han sido descartados.");
   };
 
@@ -254,8 +187,66 @@ export default function EditarRutina() {
         return;
       }
 
-      setNombre(nombreTemporal);
-      setDescripcion(descripcionTemporal);
+      // Eliminar ejercicios antiguos
+      for (const ej of originalEjercicios) {
+        await fetch(`http://localhost:8000/rutina-ejercicio/${ej.id}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${estado.token}` },
+        });
+      }
+
+      // Crear de nuevo los ejercicios con sus series
+      for (const [i, ej] of ejercicios.entries()) {
+        const resEj = await fetch(`http://localhost:8000/rutinas/${id}/ejercicios`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${estado.token}`,
+          },
+          body: JSON.stringify({
+            ejercicio_id: ej.ejercicio_id,
+            orden: i + 1,
+            comentarios: ej.comentarios || "",
+            series: series[ej.id]?.length || ej.series,
+            repeticiones: series[ej.id]?.[0]?.repeticiones || ej.repeticiones,
+          }),
+        });
+
+        if (resEj.ok) {
+          const nuevo = await resEj.json();
+          const ser = series[ej.id] || [];
+          if (ser.length) {
+            await fetch(`http://localhost:8000/rutina-ejercicio/${nuevo.id}/series`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${estado.token}`,
+              },
+              body: JSON.stringify(
+                ser.map(s => ({ numero: s.numero, repeticiones: Number(s.repeticiones), peso: Number(s.peso) }))
+              ),
+            });
+          }
+        }
+      }
+
+      // Recargar datos para actualizar IDs
+      fetch(`http://localhost:8000/rutinas/${id}/ejercicios`, {
+        headers: { Authorization: `Bearer ${estado.token}` },
+      })
+        .then(res => res.json())
+        .then(data => {
+          setEjercicios(data);
+          setOriginalEjercicios(data);
+          data.forEach((ej: RutinaEjercicio) => {
+            cargarSeries(ej.id, ej.series, ej.repeticiones);
+          });
+          setOriginalNombre(nombreTemporal);
+          setOriginalDescripcion(descripcionTemporal);
+          setNombre(nombreTemporal);
+          setDescripcion(descripcionTemporal);
+        });
+
       alert("✅ Cambios guardados.");
     } catch (err) {
       console.error("Error al guardar:", err);
@@ -263,27 +254,29 @@ export default function EditarRutina() {
     }
   };
 
-  const agregarEjercicio = async () => {
+  const agregarEjercicio = () => {
     if (!ejercicioSeleccionado) return;
 
     const orden = ejercicios.length + 1;
-    const res = await fetch(`http://localhost:8000/rutinas/${id}/ejercicios`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${estado.token}`,
-      },
-      body: JSON.stringify({ ejercicio_id: ejercicioSeleccionado.id, orden }),
-    });
-
-    if (!res.ok) {
-      alert("❌ Error al agregar ejercicio");
-      return;
-    }
-
-    const nuevo = await res.json();
+    const nuevoId = Date.now();
+    const nuevo = {
+      id: nuevoId,
+      ejercicio_id: ejercicioSeleccionado.id,
+      orden,
+      series: 3,
+      repeticiones: 10,
+      comentarios: "",
+      ejercicio: ejercicioSeleccionado,
+    } as RutinaEjercicio;
     setEjercicios(prev => [...prev, nuevo]);
-    await cargarSeries(nuevo.id, 3, 10);
+    setSeries(prev => ({
+      ...prev,
+      [nuevoId]: [
+        { numero: 1, peso: 1, repeticiones: 10 },
+        { numero: 2, peso: 1, repeticiones: 10 },
+        { numero: 3, peso: 1, repeticiones: 10 },
+      ],
+    }));
     setEjercicioSeleccionado(null);
   };
 
