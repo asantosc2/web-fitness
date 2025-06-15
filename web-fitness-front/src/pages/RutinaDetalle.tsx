@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
+import { Pencil, Trash, Play, Copy, ArrowLeft } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface Ejercicio {
   id: number;
@@ -75,9 +77,7 @@ export default function RutinaDetalle() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${estado.token}`,
         },
-        body: JSON.stringify({
-          rutina_id: Number(id),
-        }),
+        body: JSON.stringify({ rutina_id: Number(id) }),
       });
 
       if (!res.ok) {
@@ -108,11 +108,11 @@ export default function RutinaDetalle() {
       }
 
       const nueva = await res.json();
-      alert("Rutina copiada con éxito");
+      toast.success("Rutina copiada con éxito");
       navigate(`/rutinas/${nueva.id}`);
     } catch (err) {
       console.error("Error al copiar rutina:", err);
-      alert("Error inesperado");
+      toast.error("Error inesperado");
     }
   };
 
@@ -132,7 +132,7 @@ export default function RutinaDetalle() {
         return;
       }
 
-      alert("Rutina eliminada con éxito");
+      toast.success("Rutina eliminada con éxito");
       navigate("/rutinas");
     } catch (err) {
       console.error("Error al eliminar rutina:", err);
@@ -145,80 +145,75 @@ export default function RutinaDetalle() {
   };
 
   if (!id || !rutina) {
-    return (
-      <div className="text-center mt-20 text-gray-500">
-        Cargando rutina...
-      </div>
-    );
+    return <div className="text-center mt-20 text-gray-500">Cargando rutina...</div>;
   }
 
   return (
-
-    <div className="min-h-screen bg-gray-100 pt-24 px-6">
-
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-yellow-100 pt-24 px-6">
       <Navbar />
       <div className="max-w-3xl mx-auto">
-        {/* 🔙 Botón para volver atrás */}
-        <div className="mb-4">
-          <button
-            onClick={() => navigate(-1)}
-            className="text-blue-600 hover:underline"
-          >
-            ⬅ Volver atrás
-          </button>
-        </div>
-        <h1 className="text-3xl font-bold text-blue-600 mb-2 text-center">
+        {/* Volver */}
+        <button
+          onClick={() => navigate(-1)}
+          className="text-orange-600 hover:underline mb-6 flex items-center gap-1"
+        >
+          <ArrowLeft size={18} /> Volver
+        </button>
+
+        <h1 className="text-4xl font-bold text-orange-700 text-center mb-2">
           {rutina.nombre}
         </h1>
         {rutina.descripcion && (
-          <p className="text-center text-gray-600 mb-6">{rutina.descripcion}</p>
+          <p className="text-center text-gray-600 mb-8">{rutina.descripcion}</p>
         )}
 
+        {/* Lista de ejercicios */}
         {ejercicios.length === 0 ? (
           <p className="text-center text-gray-600">Esta rutina aún no tiene ejercicios.</p>
         ) : (
           <ul className="space-y-4">
             {ejercicios.map(e => (
-              <li key={e.id} className="bg-white shadow p-4 rounded">
-                <p className="font-semibold text-lg">
+              <li key={e.id} className="bg-white shadow-md p-4 rounded-lg">
+                <p className="text-lg font-semibold text-gray-800">
                   {seriesPorEjercicio[e.id] ?? 0} × {e.ejercicio.nombre}
                 </p>
-                <p className="text-sm text-gray-600">{e.ejercicio.grupo_muscular}</p>
+                <p className="text-sm text-gray-500">{e.ejercicio.grupo_muscular}</p>
               </li>
             ))}
           </ul>
         )}
 
-        <div className="mt-8 text-center space-x-4">
+        {/* Botones */}
+        <div className="mt-10 text-center flex flex-wrap justify-center gap-4">
           {rutina.es_defecto ? (
             <button
               onClick={copiarRutina}
-              className="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 shadow"
+              className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded shadow"
             >
-              Copiar rutina a tus plantillas
+              <Copy size={18} /> Copiar rutina
             </button>
           ) : (
             <>
               <button
                 onClick={iniciarSesion}
-                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 shadow"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded shadow"
               >
-                Iniciar esta rutina como sesión
+                <Play size={18} /> Iniciar sesión de entrenamiento
               </button>
+
+              <button
+                onClick={editarRutina}
+                className="flex items-center gap-2 bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-2 rounded shadow"
+              >
+                <Pencil size={18} /> Editar rutina
+              </button>
+
               <button
                 onClick={eliminarRutina}
-                className="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700 shadow"
+                className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded shadow"
               >
-                Eliminar rutina
+                <Trash size={18} /> Eliminar rutina
               </button>
-              {rutina.usuario_id === estado.usuario?.id && (
-                <button
-                  onClick={editarRutina}
-                  className="bg-yellow-500 text-white px-6 py-2 rounded hover:bg-yellow-600 shadow"
-                >
-                  Editar rutina
-                </button>
-              )}
             </>
           )}
         </div>

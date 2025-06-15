@@ -30,17 +30,16 @@ export default function ConsultaNutricional() {
     setCargando(false);
   };
 
-  // 🔄 Manejar envío de formulario (tecla Enter)
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     buscar();
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-24 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-green-100 pt-24 px-6">
       <Navbar />
-      <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4 text-blue-600">Consulta Nutricional</h1>
+      <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md">
+        <h1 className="text-2xl font-bold mb-4 text-emerald-600">Consulta Nutricional</h1>
 
         <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
           <input
@@ -48,11 +47,11 @@ export default function ConsultaNutricional() {
             placeholder="Buscar alimento..."
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
-            className="flex-1 border px-4 py-2 rounded"
+            className="flex-1 border px-4 py-2 rounded focus:outline-none focus:ring-2 focus:ring-emerald-400"
           />
           <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-emerald-600 text-white px-4 py-2 rounded hover:bg-emerald-700 transition"
           >
             Buscar
           </button>
@@ -63,7 +62,10 @@ export default function ConsultaNutricional() {
         {resultados.length > 0 && (
           <div className="space-y-3">
             {resultados.map((a, i) => (
-              <div key={i} className="flex items-center gap-4 border rounded p-4 bg-gray-50">
+              <div
+                key={i}
+                className="flex items-center gap-4 border rounded-lg p-4 bg-emerald-50 shadow-sm hover:shadow transition"
+              >
                 {a.imagen_url && (
                   <img
                     src={a.imagen_url}
@@ -72,7 +74,7 @@ export default function ConsultaNutricional() {
                   />
                 )}
                 <div>
-                  <p className="font-semibold text-lg">{a.nombre}</p>
+                  <p className="font-semibold text-lg text-emerald-800">{a.nombre}</p>
                   <p className="text-sm text-gray-600">
                     Calorías: {a.kcal} kcal | Proteínas: {a.proteinas} g | CH: {a.carbohidratos} g | Grasas: {a.grasas} g | Fibra: {a.fibra ?? 0} g
                   </p>

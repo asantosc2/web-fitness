@@ -18,6 +18,7 @@ import Progreso from "./pages/Progreso";
 import ProgresoNuevo from "./pages/ProgresoNuevo";
 import ProgresoDetalle from "./pages/ProgresoDetalle";
 import ConsultaNutricional from "./pages/ConsultaNutricional";
+import EjercicioDetalle from "./pages/EjercicioDetalle";
 
 
 
@@ -42,8 +43,8 @@ function App() {
           <Route path="/progreso" element={<PrivateRoute><Progreso /></PrivateRoute>} />
           <Route path="/progreso/nuevo" element={<PrivateRoute><ProgresoNuevo /></PrivateRoute>} />
           <Route path="/progreso/:id" element={<PrivateRoute><ProgresoDetalle /></PrivateRoute>} />
-          <Route path="/consulta-nutricional" element={<PrivateRoute><ConsultaNutricional /></PrivateRoute>}
-          />
+          <Route path="/consulta-nutricional" element={<PrivateRoute><ConsultaNutricional /></PrivateRoute>}/>
+          <Route path="/ejercicios/:id" element={<PrivateRoute><EjercicioDetalle /></PrivateRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

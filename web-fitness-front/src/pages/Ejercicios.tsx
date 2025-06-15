@@ -1,4 +1,3 @@
-//ejercicio.tsx
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
@@ -45,24 +44,24 @@ export default function Ejercicios() {
   }, [estado.token]);
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-24 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 to-indigo-100 pt-24 px-6">
       <Navbar />
-      <h1 className="text-3xl font-bold text-blue-600 mb-8 text-center">
-        Listado de ejercicios
+      <h1 className="text-4xl font-bold text-center text-blue-700 mb-10">
+        Lista de ejercicios
       </h1>
 
-      <div className="max-w-6xl mx-auto mb-8 grid gap-4 grid-cols-1 md:grid-cols-4">
+      <div className="max-w-6xl mx-auto bg-white shadow-md rounded-lg p-6 mb-10 grid grid-cols-1 md:grid-cols-4 gap-4">
         <input
           type="text"
           placeholder="Buscar por nombre"
           value={nombreFiltro}
           onChange={e => setNombreFiltro(e.target.value)}
-          className="border px-3 py-2 rounded shadow-sm col-span-1"
+          className="border px-3 py-2 rounded shadow-sm"
         />
         <select
           value={grupoFiltro}
           onChange={e => setGrupoFiltro(e.target.value)}
-          className="border px-3 py-2 rounded shadow-sm col-span-1"
+          className="border px-3 py-2 rounded shadow-sm"
         >
           <option value="">Todas las partes del cuerpo</option>
           {grupos.map(grupo => (
@@ -73,7 +72,7 @@ export default function Ejercicios() {
         <select
           value={equipoFiltro}
           onChange={e => setEquipoFiltro(e.target.value)}
-          className="border px-3 py-2 rounded shadow-sm col-span-1"
+          className="border px-3 py-2 rounded shadow-sm"
         >
           <option value="">Todas las categorías</option>
           {equipos.map(equipo => (
@@ -83,37 +82,39 @@ export default function Ejercicios() {
 
         <button
           onClick={() => navigate("/ejercicios/nuevo")}
-          className="bg-blue-600 text-white font-semibold px-4 py-2 rounded shadow hover:bg-blue-700 transition col-span-1"
+          className="bg-blue-600 text-white font-semibold px-4 py-2 rounded hover:bg-blue-700 transition"
         >
           Añadir ejercicio
         </button>
       </div>
 
-      {/* Ejercicios en líneas horizontales */}
-      <div className="max-w-4xl mx-auto flex flex-col gap-2">
+      <div className="max-w-5xl mx-auto flex flex-col gap-4">
         {ejerciciosFiltrados.map(ej => (
           <div
             key={ej.id}
-            className="bg-white rounded-lg shadow p-2 flex items-center justify-between gap-4"
+            onClick={() => navigate(`/ejercicios/${ej.id}`)}
+            className="cursor-pointer bg-white rounded-xl shadow p-4 flex items-center justify-between hover:shadow-lg hover:bg-gray-50 transition"
           >
             <div className="flex items-center gap-4">
               {ej.imagen_url ? (
                 <img
                   src={ej.imagen_url}
                   alt={ej.nombre}
-                  className="w-20 h-20 object-cover rounded"
+                  className="w-20 h-20 object-cover rounded-md"
                 />
               ) : (
-                <div className="w-20 h-20 bg-gray-200 flex items-center justify-center rounded text-gray-500">
+                <div className="w-20 h-20 bg-gray-200 flex items-center justify-center rounded-md text-gray-500">
                   Sin imagen
                 </div>
               )}
               <div>
-                <h2 className="text-lg font-semibold text-gray-800">{ej.nombre}</h2>
-                <p className="text-sm text-gray-500">{ej.grupo_muscular}</p>
+                <h2 className="text-xl font-semibold text-gray-800">{ej.nombre}</h2>
+                <p className="text-sm text-gray-500 capitalize">{ej.grupo_muscular}</p>
               </div>
             </div>
-            <p className="text-sm text-gray-500 mr-4">Categoría: {ej.tipo_equipo}</p>
+            <div className="text-sm text-gray-500 pr-4">
+              <span className="font-medium text-gray-700">Equipo:</span> {ej.tipo_equipo}
+            </div>
           </div>
         ))}
       </div>

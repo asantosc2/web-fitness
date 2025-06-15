@@ -1,268 +1,269 @@
 // src/pages/SesionDetalle.tsx
 import { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
-import { useNavigate } from "react-router-dom";
 import { DragDropContext, Draggable, Droppable, type DropResult } from "@hello-pangea/dnd";
-
+import { toast } from "react-hot-toast";
 
 interface Serie {
-    id: number;
-    numero: number;
-    repeticiones: number;
-    peso: number;
-    completada?: boolean;
+  id: number;
+  numero: number;
+  repeticiones: number;
+  peso: number;
+  completada?: boolean;
 }
 
 interface Ejercicio {
-    id: number;
-    nombre: string;
-    grupo_muscular: string;
-    tipo_equipo?: string;
+  id: number;
+  nombre: string;
+  grupo_muscular: string;
+  tipo_equipo?: string;
 }
+
 interface Sesion {
-    id: number;
-    fecha: string;
-    nombre_rutina?: string | null;
+  id: number;
+  fecha: string;
+  nombre_rutina?: string | null;
 }
 
 interface SesionEjercicio {
-    id: number;
-    orden: number;
-    repeticiones: number;
-    series: number;
-    peso: number;
-    comentarios?: string;
-    ejercicio: Ejercicio;
-    series_detalle: Serie[];
+  id: number;
+  orden: number;
+  repeticiones: number;
+  series: number;
+  peso: number;
+  comentarios?: string;
+  ejercicio: Ejercicio;
+  series_detalle: Serie[];
 }
 
 export default function SesionDetalle() {
-    const { id } = useParams();
-    const { estado } = useAuth();
-    const navigate = useNavigate();
-    const [ejercicios, setEjercicios] = useState<SesionEjercicio[]>([]);
-    const [ejerciciosDisponibles, setEjerciciosDisponibles] = useState<Ejercicio[]>([]);
-    const [filtro, setFiltro] = useState("");
-    const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState<Ejercicio | null>(null);
-    const [grupoSeleccionado, setGrupoSeleccionado] = useState("");
-    const [tipoSeleccionado, setTipoSeleccionado] = useState("");
-    const [sesion, setSesion] = useState<Sesion | null>(null);
+  const { id } = useParams();
+  const { estado } = useAuth();
+  const navigate = useNavigate();
+  const [ejercicios, setEjercicios] = useState<SesionEjercicio[]>([]);
+  const [ejerciciosDisponibles, setEjerciciosDisponibles] = useState<Ejercicio[]>([]);
+  const [filtro, setFiltro] = useState("");
+  const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState<Ejercicio | null>(null);
+  const [grupoSeleccionado, setGrupoSeleccionado] = useState("");
+  const [tipoSeleccionado, setTipoSeleccionado] = useState("");
+  const [sesion, setSesion] = useState<Sesion | null>(null);
 
-    useEffect(() => {
-        if (!id) return;
-        fetch(`http://localhost:8000/sesiones`, {
-            headers: { Authorization: `Bearer ${estado.token}` },
-        })
-            .then(res => res.json())
-            .then(data => {
-                const encontrada = data.find((s: Sesion) => s.id === Number(id));
-                setSesion(encontrada || null);
+  useEffect(() => {
+    if (!id) return;
+    fetch(`http://localhost:8000/sesiones`, {
+      headers: { Authorization: `Bearer ${estado.token}` },
+    })
+      .then(res => res.json())
+      .then(data => {
+        const encontrada = data.find((s: Sesion) => s.id === Number(id));
+        setSesion(encontrada || null);
+      });
+  }, [id, estado.token]);
+
+  useEffect(() => {
+    fetch("http://localhost:8000/ejercicios", {
+      headers: { Authorization: `Bearer ${estado.token}` },
+    })
+      .then(res => res.json())
+      .then(data => setEjerciciosDisponibles(data))
+      .catch(err => console.error("Error al cargar ejercicios disponibles", err));
+  }, [estado.token]);
+
+  useEffect(() => {
+    if (!id) return;
+    fetch(`http://localhost:8000/sesiones/${id}/ejercicios`, {
+      headers: { Authorization: `Bearer ${estado.token}` },
+    })
+      .then(res => res.json())
+      .then(async data => {
+        const ejerciciosConSeries = await Promise.all(
+          data.map(async (ej: SesionEjercicio) => {
+            const res = await fetch(`http://localhost:8000/sesion-ejercicio/${ej.id}/series`, {
+              headers: { Authorization: `Bearer ${estado.token}` },
             });
-    }, [id, estado.token]);
+            const series = await res.json();
+            return { ...ej, series_detalle: series };
+          })
+        );
+        setEjercicios(ejerciciosConSeries);
+      })
+      .catch(err => console.error("Error al cargar sesión", err));
+  }, [id, estado.token]);
 
+  const añadirSerie = async (sesionEjercicioId: number, index: number) => {
+    const nueva = {
+      numero: ejercicios[index].series_detalle.length + 1,
+      repeticiones: 10,
+      peso: 1,
+    };
 
-    useEffect(() => {
-        fetch("http://localhost:8000/ejercicios", {
-            headers: { Authorization: `Bearer ${estado.token}` },
-        })
-            .then(res => res.json())
-            .then(data => setEjerciciosDisponibles(data))
-            .catch(err => console.error("Error al cargar ejercicios disponibles", err));
-    }, [estado.token]);
+    const res = await fetch(`http://localhost:8000/sesion-ejercicio/${sesionEjercicioId}/series`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${estado.token}`,
+      },
+      body: JSON.stringify([nueva]),
+    });
 
-    useEffect(() => {
-        if (!id) return;
-        fetch(`http://localhost:8000/sesiones/${id}/ejercicios`, {
-            headers: { Authorization: `Bearer ${estado.token}` },
-        })
-            .then(res => res.json())
-            .then(async data => {
-                const ejerciciosConSeries = await Promise.all(
-                    data.map(async (ej: SesionEjercicio) => {
-                        const res = await fetch(`http://localhost:8000/sesion-ejercicio/${ej.id}/series`, {
-                            headers: { Authorization: `Bearer ${estado.token}` },
-                        });
-                        const series = await res.json();
-                        return { ...ej, series_detalle: series };
-                    })
-                );
-                setEjercicios(ejerciciosConSeries);
-            })
-            .catch(err => console.error("Error al cargar sesión", err));
-    }, [id, estado.token]);
+    const nuevas = await res.json();
+    const copia = [...ejercicios];
+    copia[index].series_detalle.push(...nuevas);
+    setEjercicios(copia);
+  };
 
+  const eliminarEjercicio = async (ejercicioId: number) => {
+    const confirmar = confirm("¿Seguro que quieres eliminar este ejercicio?");
+    if (!confirmar) return;
 
-    const añadirSerie = async (sesionEjercicioId: number, index: number) => {
-        const nueva = {
-            numero: ejercicios[index].series_detalle.length + 1,
-            repeticiones: 10,
-            peso: 1,
-        };
+    await fetch(`http://localhost:8000/sesion-ejercicio/${ejercicioId}`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${estado.token}`,
+      },
+    });
 
-        const res = await fetch(`http://localhost:8000/sesion-ejercicio/${sesionEjercicioId}/series`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${estado.token}`,
-            },
-            body: JSON.stringify([nueva]),
+    setEjercicios(prev => prev.filter(ej => ej.id !== ejercicioId));
+  };
+
+  const eliminarSerie = async (serieId: number, ejercicioIndex: number, serieIndex: number) => {
+    const confirmar = confirm("¿Eliminar esta serie?");
+    if (!confirmar) return;
+
+    await fetch(`http://localhost:8000/sesion-serie/${serieId}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${estado.token}` },
+    });
+
+    const copia = [...ejercicios];
+    copia[ejercicioIndex].series_detalle.splice(serieIndex, 1);
+    copia[ejercicioIndex].series_detalle.forEach((s, i) => (s.numero = i + 1));
+    setEjercicios(copia);
+  };
+
+  const agregarEjercicio = async () => {
+    if (!id || !ejercicioSeleccionado) return;
+
+    const nuevoEjercicio = {
+      ejercicio_id: ejercicioSeleccionado.id,
+      orden: ejercicios.length + 1,
+      series: 3,
+      repeticiones: 10,
+      peso: 1,
+      comentarios: "",
+    };
+
+    const res = await fetch(`http://localhost:8000/sesiones/${id}/ejercicios`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${estado.token}`,
+      },
+      body: JSON.stringify([nuevoEjercicio]),
+    });
+
+    const data = await res.json();
+    const resSeries = await fetch(`http://localhost:8000/sesion-ejercicio/${data[0].id}/series`, {
+      headers: { Authorization: `Bearer ${estado.token}` },
+    });
+    const series = await resSeries.json();
+
+    setEjercicios(prev => [...prev, { ...data[0], series_detalle: series }]);
+    setEjercicioSeleccionado(null);
+    setFiltro("");
+  };
+
+  const guardarSeriesSesion = async () => {
+    for (const ej of ejercicios) {
+      for (const s of ej.series_detalle) {
+        await fetch(`http://localhost:8000/sesion-serie/${s.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${estado.token}`,
+          },
+          body: JSON.stringify({
+            peso: Number(s.peso),
+            repeticiones: Number(s.repeticiones),
+          }),
         });
+      }
+    }
+  };
 
-        const nuevas = await res.json();
-        const copia = [...ejercicios];
-        copia[index].series_detalle.push(...nuevas);
-        setEjercicios(copia);
-    };
-    const eliminarEjercicio = async (ejercicioId: number) => {
-        const confirmar = confirm("¿Seguro que quieres eliminar este ejercicio?");
-        if (!confirmar) return;
+  const finalizarSesion = async () => {
+    const confirmar = confirm("¿Deseas finalizar esta sesión y actualizar la rutina base?");
+    if (!confirmar || !id) return;
 
-        await fetch(`http://localhost:8000/sesion-ejercicio/${ejercicioId}`, {
-            method: "DELETE",
-            headers: {
-                Authorization: `Bearer ${estado.token}`,
-            },
-        });
+    try {
+      await guardarSeriesSesion();
 
-        setEjercicios((prev) => prev.filter((ej) => ej.id !== ejercicioId));
-    };
+      await fetch(`http://localhost:8000/sesiones/${id}/orden-ejercicios`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${estado.token}`,
+        },
+        body: JSON.stringify(
+          ejercicios.map(ej => ({
+            sesion_ejercicio_id: ej.id,
+            nuevo_orden: ej.orden,
+          }))
+        ),
+      });
 
+      const res = await fetch(`http://localhost:8000/sesiones/${id}/actualizar-rutina`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${estado.token}`,
+        },
+      });
 
-    const eliminarSerie = async (serieId: number, ejercicioIndex: number, serieIndex: number) => {
-        const confirmar = confirm("¿Eliminar esta serie?");
-        if (!confirmar) return;
+      if (!res.ok) throw new Error("Error al actualizar la rutina");
 
-        await fetch(`http://localhost:8000/sesion-serie/${serieId}`, {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${estado.token}` },
-        });
+      toast.success("✅ Rutina actualizada correctamente");
+      navigate("/rutinas");
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Error al actualizar la rutina desde la sesión");
+    }
+  };
 
-        const copia = [...ejercicios];
-        copia[ejercicioIndex].series_detalle.splice(serieIndex, 1);
-        copia[ejercicioIndex].series_detalle.forEach((s, i) => (s.numero = i + 1));
-        setEjercicios(copia);
-    };
+  const cancelarSesion = async () => {
+    const confirmar = confirm("¿Seguro que quieres cancelar esta sesión? Se eliminará completamente.");
+    if (!confirmar || !id) return;
 
-    const agregarEjercicio = async () => {
-        if (!id || !ejercicioSeleccionado) return;
+    try {
+      const res = await fetch(`http://localhost:8000/sesiones/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${estado.token}`,
+        },
+      });
 
-        const nuevoEjercicio = {
-            ejercicio_id: ejercicioSeleccionado.id,
-            orden: ejercicios.length + 1,
-            series: 3,
-            repeticiones: 10,
-            peso: 1,
-            comentarios: "",
-        };
+      if (!res.ok) throw new Error("Error al eliminar la sesión");
 
-        const res = await fetch(`http://localhost:8000/sesiones/${id}/ejercicios`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${estado.token}`,
-            },
-            body: JSON.stringify([nuevoEjercicio]),
-        });
+      toast("✅ Sesión cancelada y eliminada");
+      navigate("/dashboard");
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Error al cancelar la sesión");
+    }
+  };
 
-        const data = await res.json();
-        const resSeries = await fetch(`http://localhost:8000/sesion-ejercicio/${data[0].id}/series`, {
-            headers: { Authorization: `Bearer ${estado.token}` },
-        });
-        const series = await resSeries.json();
+  const handleDragEnd = (result: DropResult) => {
+    if (!result.destination || result.destination.index === result.source.index) return;
+    const copia = [...ejercicios];
+    const [movido] = copia.splice(result.source.index, 1);
+    copia.splice(result.destination.index, 0, movido);
+    setEjercicios(copia.map((e, i) => ({ ...e, orden: i + 1 })));
+  };
 
-        setEjercicios((prev) => [...prev, { ...data[0], series_detalle: series }]);
-        setEjercicioSeleccionado(null);
-        setFiltro("");
-    };
-    const guardarSeriesSesion = async () => {
-        for (const ej of ejercicios) {
-            for (const s of ej.series_detalle) {
-                await fetch(`http://localhost:8000/sesion-serie/${s.id}`, {
-                    method: "PUT",
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${estado.token}`,
-                    },
-                    body: JSON.stringify({
-                        peso: Number(s.peso),
-                        repeticiones: Number(s.repeticiones),
-                    }),
-                });
-            }
-        }
-    };
-
-    const finalizarSesion = async () => {
-        const confirmar = confirm("¿Deseas finalizar esta sesión y actualizar la rutina base?");
-        if (!confirmar || !id) return;
-
-        try {
-            await guardarSeriesSesion(); // ✅ Guardar cambios antes de enviar
-            // 🔄 Guardar orden de los ejercicios
-            await fetch(`http://localhost:8000/sesiones/${id}/orden-ejercicios`, {
-                method: "PUT",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${estado.token}`,
-                },
-                body: JSON.stringify(
-                    ejercicios.map((ej) => ({
-                        sesion_ejercicio_id: ej.id,
-                        nuevo_orden: ej.orden,
-                    }))
-                ),
-            });
-            const res = await fetch(`http://localhost:8000/sesiones/${id}/actualizar-rutina`, {
-                method: "POST",
-                headers: {
-                    Authorization: `Bearer ${estado.token}`,
-                },
-            });
-
-            if (!res.ok) throw new Error("Error al actualizar la rutina");
-
-            alert("✅ Rutina actualizada correctamente.");
-            navigate("/rutinas");
-        } catch (err) {
-            console.error(err);
-            alert("❌ Error al actualizar la rutina desde la sesión.");
-        }
-    };
-
-
-    const cancelarSesion = async () => {
-        const confirmar = confirm("¿Seguro que quieres cancelar esta sesión? Se eliminará completamente.");
-        if (!confirmar || !id) return;
-
-        try {
-            const res = await fetch(`http://localhost:8000/sesiones/${id}`, {
-                method: "DELETE",
-                headers: {
-                    Authorization: `Bearer ${estado.token}`,
-                },
-            });
-
-            if (!res.ok) throw new Error("Error al eliminar la sesión");
-
-            alert("✅ Sesión cancelada y eliminada.");
-            navigate("/dashboard"); // o "/rutinas" según tu flujo
-        } catch (err) {
-            console.error(err);
-            alert("❌ Error al cancelar la sesión.");
-        }
-    };
-    const handleDragEnd = (result: DropResult) => {
-        if (!result.destination || result.destination.index === result.source.index) return;
-        const copia = [...ejercicios];
-        const [movido] = copia.splice(result.source.index, 1);
-        copia.splice(result.destination.index, 0, movido);
-        setEjercicios(copia.map((e, i) => ({ ...e, orden: i + 1 })));
-    };
 
     return (
-        <div className="min-h-screen bg-gray-100 pt-24 px-6">
+        <div className="min-h-screen bg-gradient-to-br from-sky-100 to-indigo-100 pt-24 px-6">
             <Navbar />
             <div className="max-w-3xl mx-auto">
                 <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center">Sesión de entrenamiento</h1>

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import Navbar from "../components/Navbar";
 
 const gruposMusculares = [
   "Brazos", "Hombros", "Espalda", "Pecho", "Piernas", "Glúteos", "Abdomen"
@@ -58,66 +59,82 @@ export default function NuevoEjercicio() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-24 px-6 max-w-xl mx-auto">
-      <h1 className="text-3xl font-bold text-blue-600 mb-8 text-center">
-        Crear nuevo ejercicio
-      </h1>
-
-      <form onSubmit={handleSubmit} className="bg-white shadow-md rounded p-6 space-y-4">
-        {error && <p className="text-red-600 font-semibold text-sm">{error}</p>}
-
-        <div>
-          <label className="block font-semibold mb-1">Nombre *</label>
-          <input
-            type="text"
-            value={nombre}
-            onChange={e => setNombre(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label className="block font-semibold mb-1">Parte del cuerpo *</label>
-          <select
-            value={grupo}
-            onChange={e => setGrupo(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-          >
-            <option value="">-- Selecciona --</option>
-            {gruposMusculares.map(g => (
-              <option key={g} value={g}>{g}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block font-semibold mb-1">Categoría *</label>
-          <select
-            value={tipo}
-            onChange={e => setTipo(e.target.value)}
-            className="w-full border rounded px-3 py-2"
-          >
-            <option value="">-- Selecciona --</option>
-            {categoriasEquipo.map(c => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block font-semibold mb-1">Descripción (opcional)</label>
-          <textarea
-            value={descripcion}
-            onChange={e => setDescripcion(e.target.value)}
-            rows={4}
-            className="w-full border rounded px-3 py-2"
-          />
-        </div>
-
-        <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-          Guardar ejercicio
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 to-indigo-100 pt-24 px-4">
+      <Navbar />
+      <div className="max-w-xl mx-auto bg-white shadow-xl rounded-xl p-8">
+        
+        <button
+          onClick={() => navigate(-1)}
+          className="text-blue-600 hover:underline text-sm mb-4"
+        >
+          ⬅ Volver atrás
         </button>
-      </form>
+
+        <h1 className="text-3xl font-bold text-center text-blue-700 mb-6">
+          Crear nuevo ejercicio
+        </h1>
+
+        {error && (
+          <p className="text-red-600 text-center font-semibold mb-4">{error}</p>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block font-medium text-gray-700 mb-1">Nombre *</label>
+            <input
+              type="text"
+              value={nombre}
+              onChange={e => setNombre(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+          </div>
+
+          <div>
+            <label className="block font-medium text-gray-700 mb-1">Parte del cuerpo *</label>
+            <select
+              value={grupo}
+              onChange={e => setGrupo(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            >
+              <option value="">-- Selecciona --</option>
+              {gruposMusculares.map(g => (
+                <option key={g} value={g}>{g}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block font-medium text-gray-700 mb-1">Categoría *</label>
+            <select
+              value={tipo}
+              onChange={e => setTipo(e.target.value)}
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            >
+              <option value="">-- Selecciona --</option>
+              {categoriasEquipo.map(c => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block font-medium text-gray-700 mb-1">Descripción (opcional)</label>
+            <textarea
+              value={descripcion}
+              onChange={e => setDescripcion(e.target.value)}
+              rows={4}
+              className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition"
+          >
+            Guardar ejercicio
+          </button>
+        </form>
+      </div>
     </div>
   );
 }

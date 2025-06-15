@@ -31,14 +31,14 @@ export default function Progreso() {
   }, [estado.token]);
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-24 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-violet-100 to-sky-100 pt-24 px-6">
       <Navbar />
       <div className="max-w-3xl mx-auto">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-blue-600">Mi progreso</h1>
+          <h1 className="text-3xl font-bold text-violet-700">Mi progreso</h1>
           <button
             onClick={() => navigate("/progreso/nuevo")}
-            className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+            className="bg-violet-600 text-white px-4 py-2 rounded shadow hover:bg-violet-700"
           >
             Añadir registro
           </button>

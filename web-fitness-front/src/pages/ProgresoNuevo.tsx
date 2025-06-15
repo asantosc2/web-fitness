@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { toast } from "react-hot-toast";
 
 export default function ProgresoNuevo() {
   const { estado } = useAuth();
@@ -10,11 +11,9 @@ export default function ProgresoNuevo() {
   const [peso, setPeso] = useState(0);
   const [comentarios, setComentarios] = useState("");
   const [fotos, setFotos] = useState<FileList | null>(null);
-  const [error, setError] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     try {
       const res = await fetch("http://localhost:8000/progresos", {
@@ -47,18 +46,26 @@ export default function ProgresoNuevo() {
         });
       }
 
+      toast.success("✅ Progreso guardado");
       navigate("/progreso");
     } catch (err: any) {
-      setError(err.message);
+      toast.error(err.message || "❌ Error inesperado");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-24 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-100 to-violet-200 pt-24 px-6">
       <Navbar />
-      <div className="max-w-lg mx-auto bg-white p-6 rounded shadow">
-        <h1 className="text-2xl font-bold mb-4 text-blue-600">Nuevo progreso</h1>
-        {error && <p className="text-red-600 mb-2 text-sm">{error}</p>}
+      <div className="max-w-lg mx-auto bg-white p-6 rounded-xl shadow">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-purple-600 hover:underline text-sm mb-4"
+        >
+          ⬅ Volver atrás
+        </button>
+
+        <h1 className="text-2xl font-bold mb-4 text-purple-700">Nuevo progreso</h1>
+
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block font-semibold mb-1">Peso (kg)</label>
@@ -70,6 +77,7 @@ export default function ProgresoNuevo() {
               className="w-full border rounded px-3 py-2"
             />
           </div>
+
           <div>
             <label className="block font-semibold mb-1">Comentarios</label>
             <textarea
@@ -79,6 +87,7 @@ export default function ProgresoNuevo() {
               className="w-full border rounded px-3 py-2"
             />
           </div>
+
           <div>
             <label className="block font-semibold mb-1">Fotos</label>
             <input
@@ -89,9 +98,10 @@ export default function ProgresoNuevo() {
             />
             <p className="text-xs text-gray-500 mt-1">Máximo 10 imágenes</p>
           </div>
+
           <button
             type="submit"
-            className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full"
           >
             Guardar
           </button>

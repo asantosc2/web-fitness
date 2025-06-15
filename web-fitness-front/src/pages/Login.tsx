@@ -30,23 +30,26 @@ export default function Login() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center bg-cover bg-center"
+      className="min-h-screen flex items-center justify-center bg-cover bg-center relative"
       style={{ backgroundImage: `url(${fondoLanding})` }}
     >
       <Navbar />
-      <div className="bg-black bg-opacity-60 absolute inset-0"></div>
+      <div className="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-blue-900 opacity-70"></div>
+
       <form
         onSubmit={handleSubmit}
-        className="relative bg-white bg-opacity-90 shadow-lg rounded-lg p-8 max-w-md w-full"
+        className="relative bg-white bg-opacity-95 shadow-2xl rounded-xl p-10 w-full max-w-md"
       >
-        <h2 className="text-3xl font-bold text-center text-blue-600 mb-6">
+        <h2 className="text-3xl font-extrabold text-center text-blue-700 mb-6">
           Iniciar Sesión en Liftio
         </h2>
 
-        {error && <p className="text-red-500 text-center mb-4">{error}</p>}
+        {error && (
+          <p className="text-red-600 text-center font-medium mb-4">{error}</p>
+        )}
 
         <input
-          className="border p-3 rounded-md w-full mb-4"
+          className="border border-gray-300 p-3 rounded-lg w-full mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Email"
           type="email"
           value={email}
@@ -54,19 +57,31 @@ export default function Login() {
           required
         />
         <input
-          className="border p-3 rounded-md w-full mb-4"
+          className="border border-gray-300 p-3 rounded-lg w-full mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
           placeholder="Contraseña"
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
         />
+
         <button
           type="submit"
-          className="bg-blue-600 text-white px-4 py-3 rounded-md w-full font-semibold hover:bg-blue-700 transition"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-3 rounded-lg w-full font-semibold transition"
         >
           Entrar
         </button>
+
+        <div className="mt-6 text-center text-sm text-gray-700">
+          ¿No tienes cuenta?{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/registro")}
+            className="text-blue-600 hover:underline font-semibold"
+          >
+            Regístrate aquí
+          </button>
+        </div>
       </form>
     </div>
   );

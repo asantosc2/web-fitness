@@ -135,7 +135,6 @@ export default function RutinaNueva() {
             repeticiones: ej.series[0]?.repeticiones || 10,
             comentarios: ej.comentarios || "",
           })
-
         });
 
         if (resEj.ok) {
@@ -159,39 +158,40 @@ export default function RutinaNueva() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-24 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-indigo-100 pt-24 px-4">
       <Navbar />
-      <div className="max-w-3xl mx-auto">
-        <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center">Nueva rutina</h1>
-        {mensaje && <p className="text-red-500 mb-4 text-center">{mensaje}</p>}
+      <div className="max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold text-center text-blue-700 mb-10">Nueva Rutina</h1>
 
-        <input
-          type="text"
-          placeholder="Nombre de la rutina"
-          value={nombre}
-          onChange={(e) => setNombre(e.target.value)}
-          className="w-full border px-3 py-2 rounded mb-3"
-        />
-        <textarea
-          placeholder="Descripción (opcional)"
-          value={descripcion}
-          onChange={(e) => setDescripcion(e.target.value)}
-          className="w-full border px-3 py-2 rounded mb-6"
-        />
+        {mensaje && <p className="text-red-600 text-center mb-4 font-medium">{mensaje}</p>}
 
-        <DragDropContext
-          onDragEnd={({ source, destination }: DropResult) => {
-            if (!destination || destination.index === source.index) return;
-            const copia = [...seleccionados];
-            const [movido] = copia.splice(source.index, 1);
-            copia.splice(destination.index, 0, movido);
-            copia.forEach((e, i) => (e.orden = i + 1));
-            setSeleccionados(copia);
-          }}
-        >
-          <Droppable droppableId="ejercicios-droppable">
+        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 space-y-4">
+          <input
+            type="text"
+            placeholder="Nombre de la rutina"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            className="w-full border px-4 py-2 rounded-md shadow-sm"
+          />
+          <textarea
+            placeholder="Descripción (opcional)"
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+            className="w-full border px-4 py-2 rounded-md shadow-sm"
+          />
+        </div>
+
+        <DragDropContext onDragEnd={({ source, destination }: DropResult) => {
+          if (!destination || destination.index === source.index) return;
+          const copia = [...seleccionados];
+          const [movido] = copia.splice(source.index, 1);
+          copia.splice(destination.index, 0, movido);
+          copia.forEach((e, i) => (e.orden = i + 1));
+          setSeleccionados(copia);
+        }}>
+          <Droppable droppableId="ejercicios">
             {(provided) => (
-              <div ref={provided.innerRef} {...provided.droppableProps}>
+              <div ref={provided.innerRef} {...provided.droppableProps} className="space-y-4">
                 {seleccionados.map((ej, i) => (
                   <Draggable key={i} draggableId={i.toString()} index={i}>
                     {(provided) => (
@@ -199,52 +199,43 @@ export default function RutinaNueva() {
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         {...provided.dragHandleProps}
-                        className="bg-white p-4 rounded shadow mb-4"
+                        className="bg-white rounded-xl shadow p-4"
                       >
-                        <div className="flex justify-between items-center mb-1">
-                          <h2 className="font-semibold text-blue-700 text-lg">
-                            {ej.ejercicio.nombre}
-                          </h2>
+                        <div className="flex justify-between items-center">
+                          <h2 className="font-semibold text-blue-700 text-lg">{ej.ejercicio.nombre}</h2>
                           <button
                             onClick={() => eliminarEjercicio(i)}
-                            className="text-red-500 text-xs hover:underline"
+                            className="text-red-600 text-sm hover:underline"
                           >
-                            Eliminar ejercicio
+                            Eliminar
                           </button>
                         </div>
-                        <p className="text-sm text-gray-500 mb-2">
-                          Grupo: {ej.ejercicio.grupo_muscular}
-                        </p>
+                        <p className="text-sm text-gray-600">Grupo: {ej.ejercicio.grupo_muscular}</p>
 
-                        <div className="grid grid-cols-3 font-semibold text-sm mt-2 text-gray-600">
+                        <div className="grid grid-cols-3 gap-2 mt-2 text-sm font-semibold text-gray-500">
                           <span>Serie</span>
                           <span>Peso</span>
                           <span>Reps</span>
                         </div>
 
                         {ej.series.map((s, idx) => (
-                          <div
-                            key={idx}
-                            className="grid grid-cols-4 gap-2 my-1 items-center"
-                          >
+                          <div key={idx} className="grid grid-cols-4 gap-2 items-center my-1">
                             <span className="text-sm">{s.numero}</span>
                             <input
                               type="number"
-                              min={0}
                               value={s.peso}
                               onChange={(e) => actualizarSerie(i, idx, "peso", e.target.value)}
-                              className="border rounded p-1"
+                              className="border rounded px-2 py-1"
                             />
                             <input
                               type="number"
-                              min={0}
                               value={s.repeticiones}
                               onChange={(e) => actualizarSerie(i, idx, "repeticiones", e.target.value)}
-                              className="border rounded p-1"
+                              className="border rounded px-2 py-1"
                             />
                             <button
                               onClick={() => eliminarSerie(i, idx)}
-                              className="text-red-500 text-xs hover:underline"
+                              className="text-red-500 hover:underline text-xs"
                             >
                               🗑
                             </button>
@@ -267,56 +258,50 @@ export default function RutinaNueva() {
           </Droppable>
         </DragDropContext>
 
-        <div className="bg-white p-4 rounded shadow mt-8">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">
-            ➕ Añadir nuevo ejercicio
-          </h2>
+        {/* SELECCIÓN DE EJERCICIO */}
+        <div className="bg-white rounded-2xl shadow-md mt-10 p-6">
+          <h2 className="text-xl font-semibold text-gray-700 mb-4">Añadir ejercicio</h2>
 
-          <div className="grid gap-2 grid-cols-1 sm:grid-cols-3 mb-3">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
             <input
               type="text"
               placeholder="Buscar por nombre"
               value={filtroEjercicio}
               onChange={(e) => setFiltroEjercicio(e.target.value)}
-              className="border px-3 py-2 rounded shadow-sm"
+              className="border px-3 py-2 rounded"
             />
             <select
               value={grupoFiltro}
               onChange={(e) => setGrupoFiltro(e.target.value)}
-              className="border px-3 py-2 rounded shadow-sm"
+              className="border px-3 py-2 rounded"
             >
-              <option value="">Todas las partes del cuerpo</option>
-              {[...new Set(ejerciciosDisponibles.map((e) => e.grupo_muscular))].map((grupo) => (
-                <option key={grupo} value={grupo}>
-                  {grupo}
-                </option>
+              <option value="">Todos los grupos</option>
+              {[...new Set(ejerciciosDisponibles.map(e => e.grupo_muscular))].map(grupo => (
+                <option key={grupo} value={grupo}>{grupo}</option>
               ))}
             </select>
             <select
               value={equipoFiltro}
               onChange={(e) => setEquipoFiltro(e.target.value)}
-              className="border px-3 py-2 rounded shadow-sm"
+              className="border px-3 py-2 rounded"
             >
               <option value="">Todos los equipos</option>
-              {[...new Set(ejerciciosDisponibles.map((e) => e.tipo_equipo))].map((equipo) => (
-                <option key={equipo} value={equipo}>
-                  {equipo}
-                </option>
+              {[...new Set(ejerciciosDisponibles.map(e => e.tipo_equipo))].map(equipo => (
+                <option key={equipo} value={equipo}>{equipo}</option>
               ))}
             </select>
           </div>
 
           <div className="max-h-40 overflow-y-auto border rounded">
             {ejerciciosDisponibles
-              .filter(
-                (e) =>
-                  e.nombre.toLowerCase().includes(filtroEjercicio.toLowerCase()) &&
-                  (!grupoFiltro || e.grupo_muscular === grupoFiltro) &&
-                  (!equipoFiltro || e.tipo_equipo === equipoFiltro)
+              .filter(e =>
+                e.nombre.toLowerCase().includes(filtroEjercicio.toLowerCase()) &&
+                (!grupoFiltro || e.grupo_muscular === grupoFiltro) &&
+                (!equipoFiltro || e.tipo_equipo === equipoFiltro)
               )
               .sort((a, b) => a.nombre.localeCompare(b.nombre))
               .slice(0, 10)
-              .map((e) => (
+              .map(e => (
                 <div
                   key={e.id}
                   onClick={() => setEjercicioSeleccionado(e)}
@@ -335,7 +320,7 @@ export default function RutinaNueva() {
 
           <button
             onClick={agregarEjercicio}
-            className="mt-3 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 w-full"
+            className="mt-4 bg-green-600 text-white w-full py-2 rounded hover:bg-green-700"
           >
             Añadir ejercicio
           </button>
@@ -343,7 +328,7 @@ export default function RutinaNueva() {
 
         <button
           onClick={guardarRutina}
-          className="mt-6 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded w-full"
+          className="mt-8 bg-blue-600 hover:bg-blue-700 text-white w-full py-3 rounded-lg font-semibold text-lg"
         >
           Guardar rutina
         </button>

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Navbar from "../components/Navbar";
+import { ListPlus, BookOpen } from "lucide-react";
 
 interface Rutina {
   id: number;
@@ -31,62 +32,69 @@ export default function Rutinas() {
   const ejemplos = rutinas.filter(r => r.es_defecto);
 
   return (
-    <div className="min-h-screen bg-gray-100 pt-24 px-6">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-orange-100 pt-24 px-6">
       <Navbar />
-      <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center">Mis plantillas</h1>
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-4xl font-bold text-center text-orange-700 mb-10">
+          Mis Rutinas
+        </h1>
 
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-8">
           <button
             onClick={() => setMostrarEjemplos(!mostrarEjemplos)}
-            className="text-sm text-blue-600 underline"
+            className="text-sm font-medium text-orange-600 underline hover:text-orange-800"
           >
-            {mostrarEjemplos ? "Ocultar ejemplos" : "Mostrar ejemplos"}
+            {mostrarEjemplos ? "Ocultar ejemplos" : "Ver ejemplos de plantillas"}
           </button>
 
           <button
             onClick={() => navigate("/rutinas/nueva")}
-            className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700"
+            className="flex items-center gap-2 bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded shadow font-semibold transition"
           >
-            Crear nueva rutina
+            <ListPlus size={20} /> Crear nueva rutina
           </button>
         </div>
 
-        <div className="space-y-3 mb-10">
+        <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
           {misRutinas.map(r => (
             <div
               key={r.id}
-              className="bg-white p-4 rounded shadow hover:bg-gray-50 cursor-pointer"
+              className="cursor-pointer bg-white p-5 rounded-xl shadow hover:shadow-lg transition"
               onClick={() => navigate(`/rutinas/${r.id}`)}
             >
-              <div className="flex items-center justify-between">
-                <h3 className="font-semibold text-gray-800">{r.nombre}</h3>
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded ml-2">Personal</span>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-xl font-semibold text-gray-800">{r.nombre}</h3>
+                <span className="text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded font-medium">
+                  Personal
+                </span>
               </div>
-              <p className="text-sm text-gray-500">{r.descripcion}</p>
+              <p className="text-sm text-gray-600">{r.descripcion || "Sin descripción"}</p>
             </div>
           ))}
-
         </div>
 
         {mostrarEjemplos && (
-          <div>
-            <h2 className="text-lg font-semibold text-gray-700 mb-3">📂 Ejemplos de plantillas</h2>
+          <div className="mt-12">
+            <h2 className="text-xl font-bold text-orange-700 mb-4 flex items-center gap-2">
+              <BookOpen size={20} /> Plantillas de ejemplo
+            </h2>
             {ejemplos.length === 0 ? (
-              <p className="text-gray-500 text-sm">No hay plantillas públicas.</p>
+              <p className="text-sm text-gray-500">No hay rutinas de ejemplo disponibles.</p>
             ) : (
-              <div className="space-y-3">
+              <div className="grid gap-4 grid-cols-1 md:grid-cols-2">
                 {ejemplos.map(r => (
                   <div
                     key={r.id}
-                    className="bg-white p-4 rounded shadow hover:bg-gray-50 cursor-pointer"
+                    className="cursor-pointer bg-white p-5 rounded-xl shadow hover:shadow-lg transition"
                     onClick={() => navigate(`/rutinas/${r.id}`)}
                   >
-                    <div className="flex items-center justify-between">
-                      <h3 className="font-semibold text-gray-800">{r.nombre}</h3>
-                      <span className="text-xs bg-gray-300 text-gray-700 px-2 py-0.5 rounded ml-2">Ejemplo</span>
+                    <div className="flex items-center justify-between mb-2">
+                      <h3 className="text-xl font-semibold text-gray-800">{r.nombre}</h3>
+                      <span className="text-xs bg-gray-300 text-gray-700 px-2 py-0.5 rounded font-medium">
+                        Ejemplo
+                      </span>
                     </div>
-                    <p className="text-sm text-gray-500">{r.descripcion}</p>
+                    <p className="text-sm text-gray-600">{r.descripcion || "Sin descripción"}</p>
                   </div>
                 ))}
               </div>
