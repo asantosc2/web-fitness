@@ -49,7 +49,11 @@ export default function Progreso() {
         ) : (
           <div className="space-y-4">
             {progresos.map((p) => (
-              <div key={p.id} className="bg-white p-4 rounded shadow">
+              <div
+                key={p.id}
+                onClick={() => navigate(`/progreso/${p.id}`)}
+                className="bg-white p-4 rounded shadow cursor-pointer hover:shadow-md transition"
+              >
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="font-semibold text-gray-800">

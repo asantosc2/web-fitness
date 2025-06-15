@@ -32,8 +32,15 @@ def crear_alimento(data: AlimentoCreate, session: Session = Depends(get_session)
     return alimento
 
 @router.get("", response_model=list[AlimentoRead])
-def listar_alimentos(session: Session = Depends(get_session), usuario=Depends(get_current_user)):
-    return session.exec(select(Alimento).where(Alimento.usuario_id == usuario.id)).all()
+def listar_alimentos(
+    buscar: str = "",
+    session: Session = Depends(get_session),
+    usuario=Depends(get_current_user)
+):
+    query = select(Alimento).where(Alimento.usuario_id == usuario.id)
+    if buscar:
+        query = query.where(Alimento.nombre.ilike(f"%{buscar}%"))  # 📘 Búsqueda flexible
+    return session.exec(query).all()
 
 @router.get("/{alimento_id}", response_model=AlimentoRead)
 def obtener_alimento(alimento_id: int, session: Session = Depends(get_session), usuario=Depends(get_current_user)):

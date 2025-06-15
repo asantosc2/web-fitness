@@ -301,11 +301,10 @@ class AlimentoRead(AlimentoBase):
 
 class ProgresoFotoRead(BaseModel):
     id: int
-    foto: str
+    ruta: str  # 🔄 este es el campo real del modelo SQLModel
 
     class Config:
         from_attributes = True
-        populate_by_name = True
 
 
 class ProgresoCreate(BaseModel):

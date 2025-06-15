@@ -22,12 +22,17 @@ def subir_fotos_progreso(
     session: Session = Depends(get_session),
     usuario=Depends(get_current_user)
 ):
+    print(f"📸 Recibiendo fotos para progreso {progreso_id}")
     progreso = session.get(Progreso, progreso_id)
     if not progreso or progreso.usuario_id != usuario.id:
+        print("❌ Progreso no encontrado o no autorizado")
         raise HTTPException(status_code=404, detail="Progreso no encontrado")
 
     existentes = session.exec(select(ProgresoFoto).where(ProgresoFoto.progreso_id == progreso_id)).all()
+    print(f"🖼️ Ya existen {len(existentes)} fotos")
+
     if len(existentes) + len(archivos) > 10:
+        print("🚫 Se superarían las 10 fotos permitidas")
         raise HTTPException(status_code=400, detail="Máximo de 10 fotos por progreso")
 
     nuevas_fotos = []
@@ -35,19 +40,25 @@ def subir_fotos_progreso(
     for archivo in archivos:
         extension = os.path.splitext(archivo.filename)[-1].lower()
         if extension not in [".jpg", ".jpeg", ".png", ".webp"]:
+            print(f"❌ Formato inválido: {extension}")
             raise HTTPException(status_code=400, detail="Formato de imagen no permitido")
 
         nombre_archivo = f"{uuid.uuid4()}{extension}"
-        ruta_completa = os.path.join(CARPETA_FOTOS, nombre_archivo)
+        ruta_final = os.path.join(CARPETA_FOTOS, nombre_archivo)
 
-        with open(ruta_completa, "wb") as buffer:
+        print(f"➡️ Guardando en: {ruta_final}")
+        with open(ruta_final, "wb") as buffer:
             shutil.copyfileobj(archivo.file, buffer)
 
-        foto = ProgresoFoto(progreso_id=progreso_id, ruta=nombre_archivo)
-        session.add(foto)
-        nuevas_fotos.append(foto)
+        nueva_foto = ProgresoFoto(progreso_id=progreso_id, ruta=nombre_archivo)
+        session.add(nueva_foto)
+        nuevas_fotos.append(nueva_foto)
 
     session.commit()
+    for f in nuevas_fotos:
+        session.refresh(f)
+
+    print(f"✅ {len(nuevas_fotos)} fotos guardadas correctamente")
     return nuevas_fotos
 
 @router.delete("/fotos/{foto_id}", status_code=204)
