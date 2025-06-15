@@ -1,6 +1,5 @@
 import { useState } from "react";
 import Navbar from "../components/Navbar";
-import { useAuth } from "../context/AuthContext";
 
 interface Alimento {
   nombre: string;
@@ -12,9 +11,7 @@ interface Alimento {
   imagen_url?: string;
 }
 
-
 export default function ConsultaNutricional() {
-  const { estado } = useAuth();
   const [busqueda, setBusqueda] = useState("");
   const [resultados, setResultados] = useState<Alimento[]>([]);
   const [cargando, setCargando] = useState(false);
@@ -33,13 +30,19 @@ export default function ConsultaNutricional() {
     setCargando(false);
   };
 
+  // 🔄 Manejar envío de formulario (tecla Enter)
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    buscar();
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 pt-24 px-6">
       <Navbar />
       <div className="max-w-3xl mx-auto bg-white p-6 rounded shadow">
         <h1 className="text-2xl font-bold mb-4 text-blue-600">Consulta Nutricional</h1>
 
-        <div className="flex gap-2 mb-6">
+        <form onSubmit={handleSubmit} className="flex gap-2 mb-6">
           <input
             type="text"
             placeholder="Buscar alimento..."
@@ -48,12 +51,12 @@ export default function ConsultaNutricional() {
             className="flex-1 border px-4 py-2 rounded"
           />
           <button
-            onClick={buscar}
+            type="submit"
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
           >
             Buscar
           </button>
-        </div>
+        </form>
 
         {cargando && <p className="text-gray-500 text-center">Buscando...</p>}
 
@@ -71,11 +74,10 @@ export default function ConsultaNutricional() {
                 <div>
                   <p className="font-semibold text-lg">{a.nombre}</p>
                   <p className="text-sm text-gray-600">
-                    Calorías: {a.kcal} kcal | Proteínas: {a.proteinas} g | CH: {a.carbohidratos} g | Grasas: {a.grasas} g | Fibra: {a.fibra} g
+                    Calorías: {a.kcal} kcal | Proteínas: {a.proteinas} g | CH: {a.carbohidratos} g | Grasas: {a.grasas} g | Fibra: {a.fibra ?? 0} g
                   </p>
                 </div>
               </div>
-
             ))}
           </div>
         )}
