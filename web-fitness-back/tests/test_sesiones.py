@@ -45,3 +45,21 @@ async def test_sesion_desde_rutina_y_registro(async_client):
     )
     assert resp.status_code == 200
     assert resp.json()["peso"] == 20.0
+
+
+@pytest.mark.asyncio
+async def test_listar_sesiones(async_client):
+    email = generar_email()
+    await crear_usuario(async_client, email)
+    token = await login_usuario(async_client, email)
+    headers = {"Authorization": f"Bearer {token}"}
+
+    s1 = await async_client.post("/sesiones", json={}, headers=headers)
+    assert s1.status_code == 200
+    s2 = await async_client.post("/sesiones", json={}, headers=headers)
+    assert s2.status_code == 200
+
+    resp = await async_client.get("/sesiones", headers=headers)
+    assert resp.status_code == 200
+    ids = [s["id"] for s in resp.json()]
+    assert s1.json()["id"] in ids and s2.json()["id"] in ids

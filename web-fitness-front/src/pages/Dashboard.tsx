@@ -15,7 +15,7 @@ export default function Dashboard() {
         ¡Bienvenido/a, {estado.usuario?.nombre || "usuario"}!
       </h1>
 
-      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 max-w-6xl mx-auto">
+      <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-5 max-w-6xl mx-auto">
         <button
           onClick={() => navigate("/ejercicios")}
           className="bg-white border border-gray-300 hover:border-blue-500 shadow rounded-lg p-6 text-center transition"
@@ -46,6 +46,14 @@ export default function Dashboard() {
         >
           <h2 className="text-xl font-semibold text-gray-800">Consulta nutricional</h2>
           <p className="text-gray-500 mt-2 text-sm">Accede a tu plan y consejos</p>
+        </button>
+
+        <button
+          onClick={() => navigate("/sesiones-historial")}
+          className="bg-white border border-gray-300 hover:border-blue-500 shadow rounded-lg p-6 text-center transition"
+        >
+          <h2 className="text-xl font-semibold text-gray-800">Historial</h2>
+          <p className="text-gray-500 mt-2 text-sm">Sesiones anteriores</p>
         </button>
       </div>
     </div>

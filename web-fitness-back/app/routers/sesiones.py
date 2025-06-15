@@ -15,6 +15,16 @@ from sqlalchemy.orm import selectinload
 
 router = APIRouter(tags=["Sesion"])
 
+@router.get("/sesiones", response_model=List[SesionRead])
+def listar_sesiones(
+    session: Session = Depends(get_session),
+    current_user: Usuario = Depends(get_current_user)
+):
+    sesiones = session.exec(
+        select(Sesion).where(Sesion.usuario_id == current_user.id).order_by(Sesion.fecha.desc())
+    ).all()
+    return sesiones
+
 @router.post("/sesiones", response_model=SesionRead)
 def crear_sesion(
     sesion_data: SesionCreate,
