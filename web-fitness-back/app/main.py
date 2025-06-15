@@ -3,6 +3,8 @@ from fastapi import FastAPI
 from sqlmodel import SQLModel
 from app.db import engine
 from app.routers import usuarios, ejercicios, rutinas, sesiones, alimentos, progresos, progreso_fotos, rutina_serie
+from fastapi.staticfiles import StaticFiles
+from app.routers.progreso_fotos import CARPETA_FOTOS
 from fastapi.openapi.utils import get_openapi
 from fastapi.security import HTTPBearer
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,6 +26,7 @@ app.include_router(alimentos.router)
 app.include_router(progresos.router)
 app.include_router(progreso_fotos.router)
 app.include_router(rutina_serie.router)
+app.mount("/static", StaticFiles(directory=CARPETA_FOTOS), name="static")
 
 
 

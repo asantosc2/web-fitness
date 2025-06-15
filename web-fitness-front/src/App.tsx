@@ -14,6 +14,8 @@ import EditarRutina from "./pages/EditarRutina";
 import SesionDetalle from "./pages/SesionDetalle";
 import HistorialSesiones from "./pages/HistorialSesiones";
 import SesionHistorialDetalle from "./pages/SesionHistorialDetalle";
+import Progreso from "./pages/Progreso";
+import ProgresoNuevo from "./pages/ProgresoNuevo";
 
 
 
@@ -35,6 +37,8 @@ function App() {
           <Route path="/sesiones/:id" element={<SesionDetalle />} />
           <Route path="/sesiones-historial" element={<PrivateRoute><HistorialSesiones /></PrivateRoute>} />
           <Route path="/sesiones-historial/:id" element={<PrivateRoute><SesionHistorialDetalle /></PrivateRoute>} />
+          <Route path="/progreso" element={<PrivateRoute><Progreso /></PrivateRoute>} />
+          <Route path="/progreso/nuevo" element={<PrivateRoute><ProgresoNuevo /></PrivateRoute>} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

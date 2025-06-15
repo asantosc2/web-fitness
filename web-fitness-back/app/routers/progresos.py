@@ -6,6 +6,8 @@ from app.dependencies import get_current_user
 from app.models import Progreso
 from app.schemas import ProgresoCreate, ProgresoRead, ProgresoUpdate
 from typing import List
+import os
+from .progreso_fotos import CARPETA_FOTOS
 
 router = APIRouter(prefix="/progresos", tags=["Progreso"])
 
@@ -80,6 +82,11 @@ def eliminar_progreso(
     progreso = session.get(Progreso, progreso_id)
     if not progreso or progreso.usuario_id != usuario.id:
         raise HTTPException(status_code=404, detail="Progreso no encontrado")
+
+    for foto in progreso.fotos:
+        ruta = os.path.join(CARPETA_FOTOS, foto.ruta)
+        if os.path.isfile(ruta):
+            os.remove(ruta)
 
     session.delete(progreso)
     session.commit()

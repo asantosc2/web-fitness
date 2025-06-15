@@ -4,7 +4,7 @@ from .conftest import generar_email, crear_usuario, login_usuario
 from datetime import date
 import os
 
-CARPETA_FOTOS = "C:\\Users\\josue\\Desktop\\progreso_fotos"
+CARPETA_FOTOS = "progreso_fotos"
 
 @pytest.mark.asyncio
 async def test_progreso_completo(async_client: AsyncClient):

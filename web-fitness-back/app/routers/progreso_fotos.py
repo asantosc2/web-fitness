@@ -12,7 +12,7 @@ from app.schemas import ProgresoFotoRead
 router = APIRouter(prefix="/progresos", tags=["Fotos Progreso"])
 
 # Ruta donde guardar las fotos localmente
-CARPETA_FOTOS = "C:\\Users\\josue\\Desktop\\progreso_fotos"
+CARPETA_FOTOS = "progreso_fotos"
 os.makedirs(CARPETA_FOTOS, exist_ok=True)
 
 @router.post("/{progreso_id}/fotos", response_model=List[ProgresoFotoRead])
