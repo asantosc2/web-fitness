@@ -8,7 +8,7 @@ interface Ejercicio {
   nombre: string;
   grupo_muscular: string;
   tipo_equipo: string;
-  imagen_url?: string | null;
+  fotos?: { url: string }[];
 }
 
 export default function Ejercicios() {
@@ -96,9 +96,9 @@ export default function Ejercicios() {
             className="cursor-pointer bg-white rounded-xl shadow p-4 flex items-center justify-between hover:shadow-lg hover:bg-gray-50 transition"
           >
             <div className="flex items-center gap-4">
-              {ej.imagen_url ? (
+              {ej.fotos && ej.fotos.length > 0 ? (
                 <img
-                  src={ej.imagen_url}
+                  src={`http://localhost:8000/static/${ej.fotos[0].url.replace(/^static\//, '')}`}
                   alt={ej.nombre}
                   className="w-20 h-20 object-cover rounded-md"
                 />
@@ -107,15 +107,18 @@ export default function Ejercicios() {
                   Sin imagen
                 </div>
               )}
+
               <div>
                 <h2 className="text-xl font-semibold text-gray-800">{ej.nombre}</h2>
                 <p className="text-sm text-gray-500 capitalize">{ej.grupo_muscular}</p>
               </div>
             </div>
+
             <div className="text-sm text-gray-500 pr-4">
               <span className="font-medium text-gray-700">Equipo:</span> {ej.tipo_equipo}
             </div>
           </div>
+
         ))}
       </div>
     </div>

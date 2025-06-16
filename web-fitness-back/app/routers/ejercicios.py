@@ -4,6 +4,7 @@ from typing import List
 from app.models import Ejercicio, Usuario, EjercicioFoto
 from app.schemas import EjercicioCreate, EjercicioRead, EjercicioUpdate
 from app.dependencies import get_current_user, get_session
+from sqlalchemy.orm import selectinload
 
 router = APIRouter(tags=["Ejercicio"])
 
@@ -39,10 +40,10 @@ def listar_ejercicios(
 ):
     # Devuelve ejercicios públicos (usuario_id=None) y los creados por el usuario
     ejercicios = session.exec(
-        select(Ejercicio).where(
-            (Ejercicio.usuario_id == None) | (Ejercicio.usuario_id == current_user.id)
-        )
-    ).all()
+        select(Ejercicio)
+        .options(selectinload(Ejercicio.fotos))
+        .where((Ejercicio.usuario_id == None) | (Ejercicio.usuario_id == current_user.id))
+        ).all()
     return ejercicios
 
 @router.get("/ejercicios/{id}", response_model=EjercicioRead)
