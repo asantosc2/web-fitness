@@ -20,7 +20,7 @@ export default function Rutinas() {
   const [mostrarEjemplos, setMostrarEjemplos] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8000/rutinas", {
+    fetch(`${import.meta.env.VITE_API_URL}/rutinas`, {
       headers: { Authorization: `Bearer ${estado.token}` }
     })
       .then(res => res.json())

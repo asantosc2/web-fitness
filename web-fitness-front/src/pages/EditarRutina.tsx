@@ -57,7 +57,7 @@ export default function EditarRutina() {
   const [descripcionTemporal, setDescripcionTemporal] = useState("");
 
   useEffect(() => {
-    fetch(`http://localhost:8000/rutinas/${id}`, {
+    fetch(`${import.meta.env.VITE_API_URL}/rutinas/${id}`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then(res => res.json())
@@ -68,7 +68,7 @@ export default function EditarRutina() {
         setOriginalDescripcion(data.descripcion || "");
       });
 
-    fetch(`http://localhost:8000/rutinas/${id}/ejercicios`, {
+    fetch(`${import.meta.env.VITE_API_URL}/${id}/ejercicios`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then(res => res.json())
@@ -80,7 +80,7 @@ export default function EditarRutina() {
         });
       });
 
-    fetch("http://localhost:8000/ejercicios", {
+    fetch(`${import.meta.env.VITE_API_URL}/ejercicios`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then(res => res.json())
@@ -93,7 +93,7 @@ export default function EditarRutina() {
   }, [nombre, descripcion]);
 
   const cargarSeries = async (rutinaEjercicioId: number, cantidad: number, repeticiones: number) => {
-    const res = await fetch(`http://localhost:8000/rutina-ejercicio/${rutinaEjercicioId}/series`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/rutina-ejercicio/${rutinaEjercicioId}/series`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     });
 
@@ -159,7 +159,7 @@ export default function EditarRutina() {
 
   const guardarCambios = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/rutinas/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -175,14 +175,14 @@ export default function EditarRutina() {
       }
 
       for (const ej of originalEjercicios) {
-        await fetch(`http://localhost:8000/rutina-ejercicio/${ej.id}`, {
+        await fetch(`${import.meta.env.VITE_API_URL}/rutina-ejercicio/${ej.id}`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${estado.token}` },
         });
       }
 
       for (const [i, ej] of ejercicios.entries()) {
-        const resEj = await fetch(`http://localhost:8000/rutinas/${id}/ejercicios`, {
+        const resEj = await fetch(`${import.meta.env.VITE_API_URL}${id}/ejercicios`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -201,7 +201,7 @@ export default function EditarRutina() {
           const nuevo = await resEj.json();
           const ser = series[ej.id] || [];
           if (ser.length) {
-            await fetch(`http://localhost:8000/rutina-ejercicio/${nuevo.id}/series`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/${nuevo.id}/series`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
@@ -215,7 +215,7 @@ export default function EditarRutina() {
         }
       }
 
-      fetch(`http://localhost:8000/rutinas/${id}/ejercicios`, {
+      fetch(`${import.meta.env.VITE_API_URL}/${id}/ejercicios`, {
         headers: { Authorization: `Bearer ${estado.token}` },
       })
         .then(res => res.json())

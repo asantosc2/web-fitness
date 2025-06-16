@@ -38,7 +38,7 @@ export default function NuevoEjercicio() {
     };
 
     try {
-      const res = await fetch("http://localhost:8000/ejercicios", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/ejercicios`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

@@ -19,7 +19,7 @@ export default function EjercicioDetalle() {
     const [ejercicio, setEjercicio] = useState<Ejercicio | null>(null);
 
     useEffect(() => {
-        fetch(`http://localhost:8000/ejercicios/${id}`, {
+        fetch(`${import.meta.env.VITE_API_URL}/ejercicios/${id}`, {
             headers: {
                 Authorization: `Bearer ${estado.token}`,
             },
@@ -53,7 +53,7 @@ export default function EjercicioDetalle() {
                         {ejercicio.fotos.map((foto, i) => (
                             <img
                                 key={i}
-                                src={`http://localhost:8000/static/${foto.url.replace(/^static\//, "")}`}
+                                src={`${import.meta.env.VITE_API_URL}/static/${foto.url.replace(/^static\//, "")}`}
                                 alt={`${ejercicio.nombre} - foto ${i + 1}`}
                                 className="w-full h-auto rounded-lg shadow object-cover"
                             />

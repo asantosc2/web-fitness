@@ -22,7 +22,7 @@ export default function Progreso() {
   const [progresos, setProgresos] = useState<Progreso[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/progresos", {
+    fetch(`${import.meta.env.VITE_API_URL}/progresos`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then((res) => res.json())
@@ -63,7 +63,7 @@ export default function Progreso() {
                   </div>
                   {p.fotos[0] && (
                     <img
-                      src={`http://localhost:8000/static/${p.fotos[0].ruta}`}
+                      src={`${import.meta.env.VITE_API_URL}/static/${p.fotos[0].ruta}`}
                       alt="Foto progreso"
                       className="h-16 w-16 object-cover rounded"
                     />

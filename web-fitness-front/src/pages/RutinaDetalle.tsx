@@ -41,7 +41,7 @@ export default function RutinaDetalle() {
   const [seriesPorEjercicio, setSeriesPorEjercicio] = useState<{ [key: number]: number }>({});
 
   useEffect(() => {
-    fetch(`http://localhost:8000/rutinas/${id}`, {
+    fetch(`${import.meta.env.VITE_API_URL}/rutinas/${id}`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then(res => res.json())
@@ -50,14 +50,14 @@ export default function RutinaDetalle() {
   }, [id, estado.token]);
 
   useEffect(() => {
-    fetch(`http://localhost:8000/rutinas/${id}/ejercicios`, {
+    fetch(`${import.meta.env.VITE_API_URL}/rutinas/${id}/ejercicios`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then(res => res.json())
       .then(data => {
         setEjercicios(data);
         data.forEach((ej: EjercicioDeRutina) => {
-          fetch(`http://localhost:8000/rutina-ejercicio/${ej.id}/series`, {
+          fetch(`${import.meta.env.VITE_API_URL}/rutina-ejercicio/${ej.id}/series`, {
             headers: { Authorization: `Bearer ${estado.token}` },
           })
             .then(res => res.json())
@@ -71,7 +71,7 @@ export default function RutinaDetalle() {
 
   const iniciarSesion = async () => {
     try {
-      const res = await fetch("http://localhost:8000/sesiones", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/sesiones`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -96,7 +96,7 @@ export default function RutinaDetalle() {
 
   const copiarRutina = async () => {
     try {
-      const res = await fetch(`http://localhost:8000/rutinas/${id}/copiar`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/rutinas/${id}/copiar`, {
         method: "POST",
         headers: { Authorization: `Bearer ${estado.token}` },
       });
@@ -121,7 +121,7 @@ export default function RutinaDetalle() {
     if (!confirmacion) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/rutinas/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/rutinas/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${estado.token}` },
       });

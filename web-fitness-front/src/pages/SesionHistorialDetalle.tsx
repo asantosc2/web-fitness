@@ -37,7 +37,7 @@ export default function SesionHistorialDetalle() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`http://localhost:8000/sesiones/${id}/ejercicios`, {
+    fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}/ejercicios`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then((res) => res.json())
@@ -45,7 +45,7 @@ export default function SesionHistorialDetalle() {
         const completos = await Promise.all(
           data.map(async (ej: SesionEjercicio) => {
             const resSeries = await fetch(
-              `http://localhost:8000/sesion-ejercicio/${ej.id}/series`,
+              `${import.meta.env.VITE_API_URL}/sesion-ejercicio/${ej.id}/series`,
               { headers: { Authorization: `Bearer ${estado.token}` } }
             );
             const series = await resSeries.json();
@@ -63,7 +63,7 @@ export default function SesionHistorialDetalle() {
     if (!confirmar) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/sesiones/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${estado.token}` },
       });

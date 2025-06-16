@@ -40,7 +40,7 @@ export default function Registro() {
 
     try {
       setLoading(true);
-      const res = await fetch("http://localhost:8000/usuarios", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/usuarios`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
