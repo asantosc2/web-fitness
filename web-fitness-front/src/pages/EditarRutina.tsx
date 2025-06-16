@@ -68,7 +68,7 @@ export default function EditarRutina() {
         setOriginalDescripcion(data.descripcion || "");
       });
 
-    fetch(`${import.meta.env.VITE_API_URL}/${id}/ejercicios`, {
+    fetch(`${import.meta.env.VITE_API_URL}/rutinas/${id}/ejercicios`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then(res => res.json())
