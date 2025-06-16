@@ -38,7 +38,7 @@ app.include_router(alimentos.router)
 app.include_router(progresos.router)
 app.include_router(progreso_fotos.router)
 app.include_router(rutina_serie.router)
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+app.mount("/static", StaticFiles(directory=CARPETA_FOTOS), name="static")
 
 def custom_openapi():
     if app.openapi_schema:
