@@ -4,6 +4,8 @@ import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import { Pencil, Trash, Play, Copy, ArrowLeft } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { confirmAlert } from 'react-confirm-alert';
+import 'react-confirm-alert/src/react-confirm-alert.css';
 
 interface Ejercicio {
   id: number;
@@ -116,28 +118,40 @@ export default function RutinaDetalle() {
     }
   };
 
-  const eliminarRutina = async () => {
-    const confirmacion = window.confirm("¿Seguro que quieres eliminar esta rutina?");
-    if (!confirmacion) return;
+  const eliminarRutina = () => {
+    confirmAlert({
+      title: "Eliminar rutina",
+      message: "¿Seguro que quieres eliminar esta rutina?",
+      buttons: [
+        {
+          label: "Sí",
+          onClick: async () => {
+            try {
+              const res = await fetch(`${import.meta.env.VITE_API_URL}/rutinas/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: `Bearer ${estado.token}` },
+              });
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/rutinas/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${estado.token}` },
-      });
+              if (!res.ok) {
+                const error = await res.json();
+                toast.error(error.detail || "Error al eliminar rutina");
+                return;
+              }
 
-      if (!res.ok) {
-        const error = await res.json();
-        alert(error.detail || "Error al eliminar rutina");
-        return;
-      }
-
-      toast.success("Rutina eliminada con éxito");
-      navigate("/rutinas");
-    } catch (err) {
-      console.error("Error al eliminar rutina:", err);
-      alert("Error inesperado");
-    }
+              toast.success("Rutina eliminada con éxito");
+              navigate("/rutinas");
+            } catch (err) {
+              console.error("Error al eliminar rutina:", err);
+              toast.error("Error inesperado");
+            }
+          },
+        },
+        {
+          label: "No",
+          onClick: () => { /* no hacer nada */ },
+        },
+      ],
+    });
   };
 
   const editarRutina = () => {

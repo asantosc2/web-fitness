@@ -1,6 +1,6 @@
 from sqlmodel import Session, SQLModel, create_engine
 from app.models import Ejercicio, EjercicioFoto
-
+# python -m app.scripts.seed_ejercicios
 # Configurar la conexión a la base de datos
 engine = create_engine("postgresql://postgres:postgres@localhost:5432/web_fitness")
 

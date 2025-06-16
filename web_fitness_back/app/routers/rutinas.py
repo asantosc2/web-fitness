@@ -2,7 +2,7 @@
 from fastapi import APIRouter, Body, Depends, HTTPException
 from sqlmodel import Session, select
 from typing import List
-from app.models import Rutina, RutinaEjercicio, Ejercicio, RutinaSerie, SesionEjercicio, Usuario
+from app.models import Rutina, RutinaEjercicio, Ejercicio, RutinaSerie, Sesion, SesionEjercicio, Usuario
 from sqlalchemy.orm import selectinload
 from app.schemas import (
     RutinaCreate, RutinaOrdenUpdate, RutinaRead, RutinaSerieRead, RutinaUpdate,
@@ -77,10 +77,37 @@ def eliminar_rutina(
     rutina = session.get(Rutina, id)
     if not rutina:
         raise HTTPException(status_code=404, detail="Rutina no encontrada")
+
     if rutina.usuario_id != current_user.id:
         raise HTTPException(status_code=403, detail="No tienes permiso para eliminar esta rutina")
+
+    # 1. Eliminar sesiones relacionadas
+    sesiones = session.exec(select(Sesion).where(Sesion.rutina_id == id)).all()
+    for sesion in sesiones:
+        ejercicios_sesion = session.exec(
+            select(SesionEjercicio).where(SesionEjercicio.sesion_id == sesion.id)
+        ).all()
+        for se in ejercicios_sesion:
+            session.delete(se)
+        session.delete(sesion)
+
+    # 2. Eliminar ejercicios y sus series
+    ejercicios = session.exec(
+        select(RutinaEjercicio).where(RutinaEjercicio.rutina_id == id)
+    ).all()
+
+    for ej in ejercicios:
+        series = session.exec(
+            select(RutinaSerie).where(RutinaSerie.rutina_ejercicio_id == ej.id)
+        ).all()
+        for s in series:
+            session.delete(s)
+        session.delete(ej)
+
+    # 3. Eliminar la rutina
     session.delete(rutina)
     session.commit()
+
     return {"mensaje": f"Rutina con ID {id} eliminada correctamente"}
 
 @router.post("/rutinas/{id}/copiar", response_model=RutinaRead)

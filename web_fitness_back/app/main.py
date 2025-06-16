@@ -12,6 +12,18 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 security = HTTPBearer()
 
+# Habilitar CORS para el frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",  # desarrollo local
+         "http://localhost:5174",  # desarrollo local
+        "https://web-fitness-ashen.vercel.app",  # dominio frontend en producción
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def on_startup():
@@ -57,14 +69,3 @@ app.openapi = custom_openapi
 def root():
     return {"message": "Bienvenido a la API de mi aplicación de fitness"}
 
-# Habilitar CORS para el frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",  # desarrollo local
-        "https://web-fitness-ashen.vercel.app",  # dominio frontend en producción
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)

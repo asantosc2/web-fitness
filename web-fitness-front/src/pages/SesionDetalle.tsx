@@ -5,12 +5,13 @@ import { useAuth } from "../context/AuthContext";
 import Navbar from "../components/Navbar";
 import { DragDropContext, Draggable, Droppable, type DropResult } from "@hello-pangea/dnd";
 import { toast } from "react-hot-toast";
+import { confirmAlert } from 'react-confirm-alert';
 
 interface Serie {
   id: number;
   numero: number;
-  repeticiones: number;
-  peso: number;
+  repeticiones: number | "";
+  peso: number | "";
   completada?: boolean;
 }
 
@@ -115,17 +116,25 @@ export default function SesionDetalle() {
   };
 
   const eliminarEjercicio = async (ejercicioId: number) => {
-    const confirmar = confirm("¿Seguro que quieres eliminar este ejercicio?");
-    if (!confirmar) return;
-
-    await fetch(`${import.meta.env.VITE_API_URL}/sesion-ejercicio/${ejercicioId}`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${estado.token}`,
-      },
+    confirmAlert({
+      title: "Eliminar ejercicio",
+      message: "¿Seguro que quieres eliminar este ejercicio?",
+      buttons: [
+        {
+          label: "Sí",
+          onClick: async () => {
+            await fetch(`${import.meta.env.VITE_API_URL}/sesion-ejercicio/${ejercicioId}`, {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${estado.token}`,
+              },
+            });
+            setEjercicios(prev => prev.filter(ej => ej.id !== ejercicioId));
+          },
+        },
+        { label: "No" },
+      ],
     });
-
-    setEjercicios(prev => prev.filter(ej => ej.id !== ejercicioId));
   };
 
   const eliminarSerie = async (serieId: number, ejercicioIndex: number, serieIndex: number) => {
@@ -185,8 +194,9 @@ export default function SesionDetalle() {
             Authorization: `Bearer ${estado.token}`,
           },
           body: JSON.stringify({
-            peso: Number(s.peso),
-            repeticiones: Number(s.repeticiones),
+            peso: s.peso === "" ? 0 : Number(s.peso),
+            repeticiones: s.repeticiones === "" ? 0 : Number(s.repeticiones),
+
           }),
         });
       }
@@ -194,64 +204,87 @@ export default function SesionDetalle() {
   };
 
   const finalizarSesion = async () => {
-    const confirmar = confirm("¿Deseas finalizar esta sesión y actualizar la rutina base?");
-    if (!confirmar || !id) return;
+    confirmAlert({
+      title: "Finalizar sesión",
+      message: "¿Deseas finalizar esta sesión y actualizar la rutina base?",
+      buttons: [
+        {
+          label: "Sí",
+          onClick: async () => {
+            if (!id) return;
 
-    try {
-      await guardarSeriesSesion();
+            try {
+              await guardarSeriesSesion();
 
-      await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}/orden-ejercicios`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${estado.token}`,
+              await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}/orden-ejercicios`, {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${estado.token}`,
+                },
+                body: JSON.stringify(
+                  ejercicios.map(ej => ({
+                    sesion_ejercicio_id: ej.id,
+                    nuevo_orden: ej.orden,
+                  }))
+                ),
+              });
+
+              const res = await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}/actualizar-rutina`, {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${estado.token}`,
+                },
+              });
+
+              if (!res.ok) throw new Error("Error al actualizar la rutina");
+
+              toast.success("✅ Rutina actualizada correctamente");
+              navigate("/rutinas");
+            } catch (err) {
+              console.error(err);
+              toast.error("❌ Error al actualizar la rutina desde la sesión");
+            }
+          },
         },
-        body: JSON.stringify(
-          ejercicios.map(ej => ({
-            sesion_ejercicio_id: ej.id,
-            nuevo_orden: ej.orden,
-          }))
-        ),
-      });
-
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}/actualizar-rutina`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${estado.token}`,
+        {
+          label: "No",
+          onClick: () => { /* No hace nada */ },
         },
-      });
-
-      if (!res.ok) throw new Error("Error al actualizar la rutina");
-
-      toast.success("✅ Rutina actualizada correctamente");
-      navigate("/rutinas");
-    } catch (err) {
-      console.error(err);
-      toast.error("❌ Error al actualizar la rutina desde la sesión");
-    }
+      ],
+    });
   };
 
   const cancelarSesion = async () => {
-    const confirmar = confirm("¿Seguro que quieres cancelar esta sesión? Se eliminará completamente.");
-    if (!confirmar || !id) return;
-
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${estado.token}`,
+    confirmAlert({
+      title: "Cancelar sesión",
+      message: "¿Seguro que quieres cancelar esta sesión? Se eliminará completamente.",
+      buttons: [
+        {
+          label: "Sí",
+          onClick: async () => {
+            if (!id) return;
+            try {
+              const res = await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}`, {
+                method: "DELETE",
+                headers: {
+                  Authorization: `Bearer ${estado.token}`,
+                },
+              });
+              if (!res.ok) throw new Error("Error al eliminar la sesión");
+              toast("✅ Sesión cancelada y eliminada");
+              navigate("/dashboard");
+            } catch (err) {
+              console.error(err);
+              toast.error("❌ Error al cancelar la sesión");
+            }
+          },
         },
-      });
-
-      if (!res.ok) throw new Error("Error al eliminar la sesión");
-
-      toast("✅ Sesión cancelada y eliminada");
-      navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      toast.error("❌ Error al cancelar la sesión");
-    }
+        { label: "No" },
+      ],
+    });
   };
+
 
   const handleDragEnd = (result: DropResult) => {
     if (!result.destination || result.destination.index === result.source.index) return;
@@ -262,213 +295,223 @@ export default function SesionDetalle() {
   };
 
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-sky-100 to-indigo-100 pt-24 px-6">
-            <Navbar />
-            <div className="max-w-3xl mx-auto">
-                <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center">Sesión de entrenamiento</h1>
-                {sesion && (
-                    <div className="text-center text-gray-600 mb-6">
-                        <p>
-                            <span className="font-semibold">Rutina:</span>{" "}
-                            {sesion.nombre_rutina || "Sin rutina vinculada"}
-                        </p>
-                        <p>
-                            <span className="font-semibold">Fecha:</span>{" "}
-                            {new Date(sesion.fecha).toLocaleDateString()}
-                        </p>
-                    </div>
-                )}
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-sky-100 to-indigo-100 pt-24 px-6">
+      <Navbar />
+      <div className="max-w-3xl mx-auto">
+        <button
+          onClick={() => navigate(-1)}
+          className="text-blue-700 hover:underline mb-4 flex items-center gap-1"
+        >
+          ⬅ Volver
+        </button>
+        <h1 className="text-3xl font-bold text-blue-600 mb-6 text-center">Sesión de entrenamiento</h1>
+        {sesion && (
+          <div className="text-center text-gray-600 mb-6">
+            <p>
+              <span className="font-semibold">Rutina:</span>{" "}
+              {sesion.nombre_rutina || "Sin rutina vinculada"}
+            </p>
+            <p>
+              <span className="font-semibold">Fecha:</span>{" "}
+              {new Date(sesion.fecha).toLocaleDateString()}
+            </p>
+          </div>
+        )}
 
-                {ejercicios.length === 0 ? (
-                    <p className="text-center text-gray-500">Cargando ejercicios...</p>
-                ) : (
-                    <>
-                        <DragDropContext onDragEnd={handleDragEnd}>
-                            <Droppable droppableId="ejercicios-droppable">
-                                {(provided) => (
-                                    <div ref={provided.innerRef} {...provided.droppableProps}>
-                                        {ejercicios.map((ej, i) => (
-                                            <Draggable key={ej.id} draggableId={ej.id.toString()} index={i}>
-                                                {(provided) => (
-                                                    <div
-                                                        ref={provided.innerRef}
-                                                        {...provided.draggableProps}
-                                                        {...provided.dragHandleProps}
-                                                        className="bg-white p-4 rounded shadow mb-4"
-                                                    >
-                                                        <div className="flex justify-between items-center">
-                                                            <h2 className="font-semibold text-blue-700 text-lg">{ej.ejercicio.nombre}</h2>
-                                                            <button
-                                                                onClick={() => eliminarEjercicio(ej.id)}
-                                                                className="text-red-600 text-sm hover:underline"
-                                                            >
-                                                                🗑 Eliminar ejercicio
-                                                            </button>
-                                                        </div>
+        {ejercicios.length === 0 ? (
+          <p className="text-center text-gray-500">Cargando ejercicios...</p>
+        ) : (
+          <>
+            <DragDropContext onDragEnd={handleDragEnd}>
+              <Droppable droppableId="ejercicios-droppable">
+                {(provided) => (
+                  <div ref={provided.innerRef} {...provided.droppableProps}>
+                    {ejercicios.map((ej, i) => (
+                      <Draggable key={ej.id} draggableId={ej.id.toString()} index={i}>
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            {...provided.dragHandleProps}
+                            className="bg-white p-4 rounded shadow mb-4"
+                          >
+                            <div className="flex justify-between items-center">
+                              <h2 className="font-semibold text-blue-700 text-lg">{ej.ejercicio.nombre}</h2>
+                              <button
+                                onClick={() => eliminarEjercicio(ej.id)}
+                                className="text-red-600 text-sm hover:underline"
+                              >
+                                🗑 Eliminar ejercicio
+                              </button>
+                            </div>
 
-                                                        <p className="text-sm text-gray-500 mb-2">Grupo: {ej.ejercicio.grupo_muscular}</p>
+                            <p className="text-sm text-gray-500 mb-2">Grupo: {ej.ejercicio.grupo_muscular}</p>
 
-                                                        <div className="grid grid-cols-4 font-semibold text-sm mt-2 text-gray-600">
-                                                            <span>Serie</span>
-                                                            <span>Peso</span>
-                                                            <span>Reps</span>
-                                                            <span></span>
-                                                        </div>
+                            <div className="grid grid-cols-4 font-semibold text-sm mt-2 text-gray-600">
+                              <span>Serie</span>
+                              <span>Peso</span>
+                              <span>Reps</span>
+                              <span></span>
+                            </div>
 
-                                                        {ej.series_detalle.map((s, idx) => (
-                                                            <div
-                                                                key={s.id}
-                                                                className={`grid grid-cols-5 gap-2 my-1 items-center ${s.completada ? 'bg-green-100' : ''}`}
-                                                            >
-                                                                <span className="text-sm">{s.numero}</span>
-                                                                <input
-                                                                    type="number"
-                                                                    min={0}
-                                                                    value={s.peso === null || isNaN(s.peso) ? "" : s.peso}
-                                                                    onChange={(e) => {
-                                                                        const copia = [...ejercicios];
-                                                                        copia[i].series_detalle[idx].peso = e.target.value === "" ? 0 : parseFloat(e.target.value);
-                                                                        setEjercicios(copia);
-                                                                    }}
-                                                                    className="border rounded p-1"
-                                                                />
-                                                                <input
-                                                                    type="number"
-                                                                    min={0}
-                                                                    value={s.repeticiones === null || isNaN(s.repeticiones) ? "" : s.repeticiones}
-                                                                    onChange={(e) => {
-                                                                        const copia = [...ejercicios];
-                                                                        copia[i].series_detalle[idx].repeticiones = e.target.value === "" ? 0 : parseInt(e.target.value);
-                                                                        setEjercicios(copia);
-                                                                    }}
-                                                                    className="border rounded p-1"
-                                                                />
-                                                                <button
-                                                                    onClick={() => {
-                                                                        const copia = [...ejercicios];
-                                                                        copia[i].series_detalle[idx].completada = !copia[i].series_detalle[idx].completada;
-                                                                        setEjercicios(copia);
-                                                                    }}
-                                                                    className={`text-xs px-2 py-1 rounded ${s.completada ? "bg-green-600 text-white" : "bg-gray-300 text-gray-800"}`}
-                                                                >
-                                                                    {s.completada ? "✔" : "Marcar"}
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => eliminarSerie(s.id, i, idx)}
-                                                                    className="text-red-600 hover:underline text-sm"
-                                                                >
-                                                                    🗑
-                                                                </button>
-                                                            </div>
-                                                        ))}
-
-                                                        <button
-                                                            onClick={() => añadirSerie(ej.id, i)}
-                                                            className="text-sm text-green-600 hover:underline mt-2"
-                                                        >
-                                                            ➕ Añadir serie
-                                                        </button>
-                                                    </div>
-                                                )}
-                                            </Draggable>
-                                        ))}
-                                        {provided.placeholder}
-                                    </div>
-                                )}
-                            </Droppable>
-                        </DragDropContext>
-
-
-                        <div className="bg-white p-4 rounded shadow mt-8">
-                            <h2 className="text-lg font-semibold text-gray-700 mb-4">➕ Añadir nuevo ejercicio</h2>
-
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                            {ej.series_detalle.map((s, idx) => (
+                              <div
+                                key={s.id}
+                                className={`grid grid-cols-5 gap-2 my-1 items-center ${s.completada ? 'bg-green-100' : ''}`}
+                              >
+                                <span className="text-sm">{s.numero}</span>
                                 <input
-                                    type="text"
-                                    placeholder="Buscar por nombre"
-                                    value={filtro}
-                                    onChange={(e) => setFiltro(e.target.value)}
-                                    className="border px-3 py-2 rounded w-full"
+                                  type="number"
+                                  min={0}
+                                  value={s.peso === "" ? "" : s.peso}
+                                  onChange={(e) => {
+                                    const valor = e.target.value;
+                                    const copia = [...ejercicios];
+                                    copia[i].series_detalle[idx].peso = valor === "" ? "" : parseFloat(valor);
+                                    setEjercicios(copia);
+                                  }}
+                                  className="border rounded p-1"
                                 />
 
-                                <select
-                                    value={grupoSeleccionado}
-                                    onChange={(e) => setGrupoSeleccionado(e.target.value)}
-                                    className="border px-3 py-2 rounded w-full"
+                                <input
+                                  type="number"
+                                  min={0}
+                                  value={s.repeticiones === "" ? "" : s.repeticiones}
+                                  onChange={(e) => {
+                                    const valor = e.target.value;
+                                    const copia = [...ejercicios];
+                                    copia[i].series_detalle[idx].repeticiones = valor === "" ? "" : parseInt(valor);
+                                    setEjercicios(copia);
+                                  }}
+                                  className="border rounded p-1"
+                                />
+
+                                <button
+                                  onClick={() => {
+                                    const copia = [...ejercicios];
+                                    copia[i].series_detalle[idx].completada = !copia[i].series_detalle[idx].completada;
+                                    setEjercicios(copia);
+                                  }}
+                                  className={`text-xs px-2 py-1 rounded ${s.completada ? "bg-green-600 text-white" : "bg-gray-300 text-gray-800"}`}
                                 >
-                                    <option value="">Todos los grupos</option>
-                                    {[...new Set(ejerciciosDisponibles.map(e => e.grupo_muscular))].map(g => (
-                                        <option key={g} value={g}>{g}</option>
-                                    ))}
-                                </select>
-
-                                <select
-                                    value={tipoSeleccionado}
-                                    onChange={(e) => setTipoSeleccionado(e.target.value)}
-                                    className="border px-3 py-2 rounded w-full"
+                                  {s.completada ? "✔" : "Marcar"}
+                                </button>
+                                <button
+                                  onClick={() => eliminarSerie(s.id, i, idx)}
+                                  className="text-red-600 hover:underline text-sm"
                                 >
-                                    <option value="">Todos los equipos</option>
-                                    {[...new Set(ejerciciosDisponibles.map(e => e.tipo_equipo))].map(t => (
-                                        <option key={t} value={t}>{t}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                            <div className="max-h-40 overflow-y-auto border rounded">
-                                {ejerciciosDisponibles
-                                    .filter(e =>
-                                        (filtro === "" || e.nombre.toLowerCase().includes(filtro.toLowerCase())) &&
-                                        (grupoSeleccionado === "" || e.grupo_muscular === grupoSeleccionado) &&
-                                        (tipoSeleccionado === "" || e.tipo_equipo === tipoSeleccionado)
-                                    )
-                                    .sort((a, b) => a.nombre.localeCompare(b.nombre)) // ✅ orden alfabético
-                                    .map((e) => (
-                                        <div
-                                            key={e.id}
-                                            onClick={() => setEjercicioSeleccionado(e)}
-                                            className={`px-3 py-2 cursor-pointer hover:bg-gray-200 ${ejercicioSeleccionado?.id === e.id ? "bg-green-100 font-bold" : ""
-                                                }`}
-                                        >
-                                            {e.nombre} ({e.grupo_muscular} - {e.tipo_equipo})
-                                        </div>
-                                    ))}
-
-                            </div>
-
-                            {ejercicioSeleccionado && (
-                                <div className="mt-3 text-sm text-green-600">
-                                    ✅ Seleccionado: {ejercicioSeleccionado.nombre}
-                                </div>
-                            )}
+                                  🗑
+                                </button>
+                              </div>
+                            ))}
 
                             <button
-                                onClick={agregarEjercicio}
-                                className="mt-4 bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700"
-                                disabled={!ejercicioSeleccionado}
+                              onClick={() => añadirSerie(ej.id, i)}
+                              className="text-sm text-green-600 hover:underline mt-2"
                             >
-                                Añadir a la sesión
+                              ➕ Añadir serie
                             </button>
-
-
-                        </div>
-                    </>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                  </div>
                 )}
-            </div>
-            <div className="text-center mt-4 flex justify-center gap-4">
-                <button
-                    onClick={finalizarSesion}
-                    className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded"
+              </Droppable>
+            </DragDropContext>
+
+
+            <div className="bg-white p-4 rounded shadow mt-8">
+              <h2 className="text-lg font-semibold text-gray-700 mb-4">➕ Añadir nuevo ejercicio</h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre"
+                  value={filtro}
+                  onChange={(e) => setFiltro(e.target.value)}
+                  className="border px-3 py-2 rounded w-full"
+                />
+
+                <select
+                  value={grupoSeleccionado}
+                  onChange={(e) => setGrupoSeleccionado(e.target.value)}
+                  className="border px-3 py-2 rounded w-full"
                 >
-                    Finalizar sesión y actualizar rutina base
-                </button>
-                <button
-                    onClick={cancelarSesion}
-                    className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded"
+                  <option value="">Todos los grupos</option>
+                  {[...new Set(ejerciciosDisponibles.map(e => e.grupo_muscular))].map(g => (
+                    <option key={g} value={g}>{g}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={tipoSeleccionado}
+                  onChange={(e) => setTipoSeleccionado(e.target.value)}
+                  className="border px-3 py-2 rounded w-full"
                 >
-                    Cancelar sesión
-                </button>
+                  <option value="">Todos los equipos</option>
+                  {[...new Set(ejerciciosDisponibles.map(e => e.tipo_equipo))].map(t => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="max-h-40 overflow-y-auto border rounded">
+                {ejerciciosDisponibles
+                  .filter(e =>
+                    (filtro === "" || e.nombre.toLowerCase().includes(filtro.toLowerCase())) &&
+                    (grupoSeleccionado === "" || e.grupo_muscular === grupoSeleccionado) &&
+                    (tipoSeleccionado === "" || e.tipo_equipo === tipoSeleccionado)
+                  )
+                  .sort((a, b) => a.nombre.localeCompare(b.nombre)) // ✅ orden alfabético
+                  .map((e) => (
+                    <div
+                      key={e.id}
+                      onClick={() => setEjercicioSeleccionado(e)}
+                      className={`px-3 py-2 cursor-pointer hover:bg-gray-200 ${ejercicioSeleccionado?.id === e.id ? "bg-green-100 font-bold" : ""
+                        }`}
+                    >
+                      {e.nombre} ({e.grupo_muscular} - {e.tipo_equipo})
+                    </div>
+                  ))}
+
+              </div>
+
+              {ejercicioSeleccionado && (
+                <div className="mt-3 text-sm text-green-600">
+                  ✅ Seleccionado: {ejercicioSeleccionado.nombre}
+                </div>
+              )}
+
+              <button
+                onClick={agregarEjercicio}
+                className="mt-4 bg-green-600 text-white px-4 py-2 rounded w-full hover:bg-green-700"
+                disabled={!ejercicioSeleccionado}
+              >
+                Añadir a la sesión
+              </button>
+
+
             </div>
-        </div>
-    );
+          </>
+        )}
+      </div>
+      <div className="text-center mt-4 flex justify-center gap-4">
+        <button
+          onClick={finalizarSesion}
+          className="bg-blue-700 hover:bg-blue-800 text-white px-6 py-2 rounded"
+        >
+          Finalizar sesión y actualizar rutina base
+        </button>
+        <button
+          onClick={cancelarSesion}
+          className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded"
+        >
+          Cancelar sesión
+        </button>
+      </div>
+    </div>
+  );
 }

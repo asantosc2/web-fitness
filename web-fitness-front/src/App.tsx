@@ -19,6 +19,8 @@ import ProgresoNuevo from "./pages/ProgresoNuevo";
 import ProgresoDetalle from "./pages/ProgresoDetalle";
 import ConsultaNutricional from "./pages/ConsultaNutricional";
 import EjercicioDetalle from "./pages/EjercicioDetalle";
+import 'react-confirm-alert/src/react-confirm-alert.css';
+
 
 
 

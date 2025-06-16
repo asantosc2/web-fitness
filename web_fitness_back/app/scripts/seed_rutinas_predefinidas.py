@@ -1,7 +1,7 @@
 from sqlmodel import Session
 from app.db import engine
 from app.models import Rutina, RutinaEjercicio, RutinaSerie
-
+# python -m app.scripts.seed_ejercicios
 with Session(engine) as session:
     # Crear la rutina principal
     rutina = Rutina(

@@ -27,6 +27,8 @@ export default function Navbar() {
   return (
     <nav className="bg-white shadow-md fixed top-0 w-full z-50">
       <div className="w-full h-16 flex items-center justify-between px-4 md:px-8">
+
+
         {/* Logo */}
         <Link to="/dashboard" className="flex items-center gap-3">
           <img src={logo} alt="Liftio Logo" className="h-12 w-auto object-contain" />
@@ -42,14 +44,30 @@ export default function Navbar() {
 
         {/* Navegación escritorio */}
         <div className="hidden md:flex items-center gap-6 text-sm font-semibold">
+          {/* Botones en la pantalla de inicio (landing) si no hay token */}
+          {location.pathname === "/" && !estado.token && (
+            <div className="hidden md:flex items-center gap-4">
+              <Link
+                to="/login"
+                className="text-blue-600 font-semibold hover:underline"
+              >
+                Iniciar sesión
+              </Link>
+              <Link
+                to="/registro"
+                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 font-semibold text-sm"
+              >
+                Registrarse
+              </Link>
+            </div>
+          )}
           {estado.token &&
             enlacesPrivados.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className={`hover:text-blue-600 transition ${
-                  location.pathname === link.path ? "text-blue-600 font-bold" : ""
-                }`}
+                className={`hover:text-blue-600 transition ${location.pathname === link.path ? "text-blue-600 font-bold" : ""
+                  }`}
               >
                 {link.label}
               </Link>
@@ -73,9 +91,8 @@ export default function Navbar() {
               key={link.path}
               to={link.path}
               onClick={() => setOpen(false)}
-              className={`hover:text-blue-600 transition ${
-                location.pathname === link.path ? "text-blue-600 font-bold" : ""
-              }`}
+              className={`hover:text-blue-600 transition ${location.pathname === link.path ? "text-blue-600 font-bold" : ""
+                }`}
             >
               {link.label}
             </Link>

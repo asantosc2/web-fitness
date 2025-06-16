@@ -25,6 +25,9 @@ export default function Registro() {
 
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarConfirm, setMostrarConfirm] = useState(false);
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -117,24 +120,44 @@ export default function Registro() {
           required
           className="w-full mb-4 p-3 border border-gray-300 rounded-lg"
         />
-        <input
-          type="password"
-          name="password"
-          placeholder="Contraseña"
-          value={formData.password}
-          onChange={handleChange}
-          required
-          className="w-full mb-4 p-3 border border-gray-300 rounded-lg"
-        />
-        <input
-          type="password"
-          name="confirm"
-          placeholder="Confirmar contraseña"
-          value={formData.confirm}
-          onChange={handleChange}
-          required
-          className="w-full mb-6 p-3 border border-gray-300 rounded-lg"
-        />
+        <div className="relative mb-4">
+          <input
+            type={mostrarPassword ? "text" : "password"}
+            name="password"
+            placeholder="Contraseña"
+            value={formData.password}
+            onChange={handleChange}
+            required
+            className="w-full p-3 border border-gray-300 rounded-lg pr-12"
+          />
+          <button
+            type="button"
+            onClick={() => setMostrarPassword((prev) => !prev)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 text-sm hover:underline"
+          >
+            {mostrarPassword ? "Ocultar" : "Ver"}
+          </button>
+        </div>
+
+        <div className="relative mb-6">
+          <input
+            type={mostrarConfirm ? "text" : "password"}
+            name="confirm"
+            placeholder="Confirmar contraseña"
+            value={formData.confirm}
+            onChange={handleChange}
+            required
+            className="w-full p-3 border border-gray-300 rounded-lg pr-12"
+          />
+          <button
+            type="button"
+            onClick={() => setMostrarConfirm((prev) => !prev)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 text-sm hover:underline"
+          >
+            {mostrarConfirm ? "Ocultar" : "Ver"}
+          </button>
+        </div>
+
 
         <button
           type="submit"

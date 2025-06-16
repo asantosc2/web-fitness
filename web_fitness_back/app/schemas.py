@@ -171,11 +171,18 @@ class RutinaSerieCreate(BaseModel):
     repeticiones: int
     peso: float
 
-    @field_validator("numero", "repeticiones", "peso")
+    @field_validator("numero")
     @classmethod
-    def validos(cls, v):
-        if v <= 0:
-            raise ValueError("Los valores deben ser mayores que cero")
+    def validar_numero(cls, v):
+        if v < 1:
+            raise ValueError("El número de serie debe ser mayor que cero")
+        return v
+
+    @field_validator("repeticiones", "peso")
+    @classmethod
+    def validar_no_negativos(cls, v, info):
+        if v < 0:
+            raise ValueError(f"{info.field_name.capitalize()} no puede ser negativo")
         return v
 
 class RutinaSerieRead(BaseModel):

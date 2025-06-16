@@ -9,6 +9,7 @@ import {
   Draggable,
 } from "@hello-pangea/dnd";
 import type { DropResult } from "@hello-pangea/dnd";
+import { ArrowLeft } from "lucide-react";
 
 interface Ejercicio {
   id: number;
@@ -158,14 +159,20 @@ export default function RutinaNueva() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-indigo-100 pt-24 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-100 pt-24 px-4">
       <Navbar />
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold text-center text-blue-700 mb-10">Nueva Rutina</h1>
+        <button
+          onClick={() => navigate(-1)}
+          className="text-orange-600 hover:underline mb-6 flex items-center gap-1"
+        >
+          <ArrowLeft size={18} /> Volver
+        </button>
+        <h1 className="text-4xl font-bold text-center text-orange-700 mb-10">Nueva Rutina</h1>
 
         {mensaje && <p className="text-red-600 text-center mb-4 font-medium">{mensaje}</p>}
 
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 space-y-4">
+        <div className="bg-white rounded-xl shadow-md border border-orange-100">
           <input
             type="text"
             placeholder="Nombre de la rutina"
@@ -300,7 +307,6 @@ export default function RutinaNueva() {
                 (!equipoFiltro || e.tipo_equipo === equipoFiltro)
               )
               .sort((a, b) => a.nombre.localeCompare(b.nombre))
-              .slice(0, 10)
               .map(e => (
                 <div
                   key={e.id}
@@ -320,7 +326,7 @@ export default function RutinaNueva() {
 
           <button
             onClick={agregarEjercicio}
-            className="mt-4 bg-green-600 text-white w-full py-2 rounded hover:bg-green-700"
+            className="mt-4 bg-orange-500 text-white w-full py-2 rounded hover:bg-orange-600"
           >
             Añadir ejercicio
           </button>

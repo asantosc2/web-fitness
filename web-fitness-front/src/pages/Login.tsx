@@ -7,6 +7,7 @@ import { useAuth } from "../context/AuthContext";
 export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [mostrarPassword, setMostrarPassword] = useState(false); // 👈 NUEVO
   const { login } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState("");
@@ -56,14 +57,25 @@ export default function Login() {
           onChange={(e) => setEmail(e.target.value)}
           required
         />
-        <input
-          className="border border-gray-300 p-3 rounded-lg w-full mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="Contraseña"
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+
+        {/* Campo de contraseña con botón para mostrar/ocultar */}
+        <div className="relative mb-6">
+          <input
+            className="border border-gray-300 p-3 rounded-lg w-full focus:outline-none focus:ring-2 focus:ring-blue-500 pr-12"
+            placeholder="Contraseña"
+            type={mostrarPassword ? "text" : "password"}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+          <button
+            type="button"
+            onClick={() => setMostrarPassword(prev => !prev)}
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-blue-600 hover:underline"
+          >
+            {mostrarPassword ? "Ocultar" : "Ver"}
+          </button>
+        </div>
 
         <button
           type="submit"
