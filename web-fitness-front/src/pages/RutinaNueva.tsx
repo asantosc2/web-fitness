@@ -46,7 +46,7 @@ export default function RutinaNueva() {
   const [ejercicioSeleccionado, setEjercicioSeleccionado] = useState<Ejercicio | null>(null);
 
   useEffect(() => {
-    fetch("http://localhost:8000/ejercicios", {
+    fetch(`${import.meta.env.VITE_API_URL}/ejercicios`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then((res) => res.json())
@@ -109,7 +109,7 @@ export default function RutinaNueva() {
   const guardarRutina = async () => {
     if (!nombre.trim()) return setMensaje("El nombre es obligatorio");
     try {
-      const res = await fetch("http://localhost:8000/rutinas", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/rutinas`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -122,7 +122,7 @@ export default function RutinaNueva() {
       const rutina = await res.json();
 
       for (const [i, ej] of seleccionados.entries()) {
-        const resEj = await fetch(`http://localhost:8000/rutinas/${rutina.id}/ejercicios`, {
+        const resEj = await fetch(`${import.meta.env.VITE_API_URL}/rutinas/${rutina.id}/ejercicios`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -139,7 +139,7 @@ export default function RutinaNueva() {
 
         if (resEj.ok) {
           const rel = await resEj.json();
-          await fetch(`http://localhost:8000/rutina-ejercicio/${rel.id}/series`, {
+          await fetch(`${import.meta.env.VITE_API_URL}/rutina-ejercicio/${rel.id}/series`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",

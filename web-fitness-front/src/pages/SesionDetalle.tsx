@@ -52,7 +52,7 @@ export default function SesionDetalle() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`http://localhost:8000/sesiones`, {
+    fetch(`${import.meta.env.VITE_API_URL}/sesiones`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then(res => res.json())
@@ -63,7 +63,7 @@ export default function SesionDetalle() {
   }, [id, estado.token]);
 
   useEffect(() => {
-    fetch("http://localhost:8000/ejercicios", {
+    fetch(`${import.meta.env.VITE_API_URL}/ejercicios`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then(res => res.json())
@@ -73,14 +73,14 @@ export default function SesionDetalle() {
 
   useEffect(() => {
     if (!id) return;
-    fetch(`http://localhost:8000/sesiones/${id}/ejercicios`, {
+    fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}/ejercicios`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then(res => res.json())
       .then(async data => {
         const ejerciciosConSeries = await Promise.all(
           data.map(async (ej: SesionEjercicio) => {
-            const res = await fetch(`http://localhost:8000/sesion-ejercicio/${ej.id}/series`, {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/sesion-ejercicio/${ej.id}/series`, {
               headers: { Authorization: `Bearer ${estado.token}` },
             });
             const series = await res.json();
@@ -99,7 +99,7 @@ export default function SesionDetalle() {
       peso: 1,
     };
 
-    const res = await fetch(`http://localhost:8000/sesion-ejercicio/${sesionEjercicioId}/series`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/sesion-ejercicio/${sesionEjercicioId}/series`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -118,7 +118,7 @@ export default function SesionDetalle() {
     const confirmar = confirm("¿Seguro que quieres eliminar este ejercicio?");
     if (!confirmar) return;
 
-    await fetch(`http://localhost:8000/sesion-ejercicio/${ejercicioId}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/sesion-ejercicio/${ejercicioId}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${estado.token}`,
@@ -132,7 +132,7 @@ export default function SesionDetalle() {
     const confirmar = confirm("¿Eliminar esta serie?");
     if (!confirmar) return;
 
-    await fetch(`http://localhost:8000/sesion-serie/${serieId}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/sesion-serie/${serieId}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${estado.token}` },
     });
@@ -155,7 +155,7 @@ export default function SesionDetalle() {
       comentarios: "",
     };
 
-    const res = await fetch(`http://localhost:8000/sesiones/${id}/ejercicios`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}/ejercicios`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -165,7 +165,7 @@ export default function SesionDetalle() {
     });
 
     const data = await res.json();
-    const resSeries = await fetch(`http://localhost:8000/sesion-ejercicio/${data[0].id}/series`, {
+    const resSeries = await fetch(`${import.meta.env.VITE_API_URL}/sesion-ejercicio/${data[0].id}/series`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     });
     const series = await resSeries.json();
@@ -178,7 +178,7 @@ export default function SesionDetalle() {
   const guardarSeriesSesion = async () => {
     for (const ej of ejercicios) {
       for (const s of ej.series_detalle) {
-        await fetch(`http://localhost:8000/sesion-serie/${s.id}`, {
+        await fetch(`${import.meta.env.VITE_API_URL}/sesion-serie/${s.id}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -200,7 +200,7 @@ export default function SesionDetalle() {
     try {
       await guardarSeriesSesion();
 
-      await fetch(`http://localhost:8000/sesiones/${id}/orden-ejercicios`, {
+      await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}/orden-ejercicios`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -214,7 +214,7 @@ export default function SesionDetalle() {
         ),
       });
 
-      const res = await fetch(`http://localhost:8000/sesiones/${id}/actualizar-rutina`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}/actualizar-rutina`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${estado.token}`,
@@ -236,7 +236,7 @@ export default function SesionDetalle() {
     if (!confirmar || !id) return;
 
     try {
-      const res = await fetch(`http://localhost:8000/sesiones/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/sesiones/${id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${estado.token}`,

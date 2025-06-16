@@ -21,7 +21,7 @@ export default function ConsultaNutricional() {
     setCargando(true);
     setResultados([]);
     try {
-      const res = await fetch(`http://localhost:8000/alimentos/buscar-openfood?query=${busqueda}`);
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/alimentos/buscar-openfood?query=${busqueda}`);
       const data = await res.json();
       setResultados(data);
     } catch (err) {

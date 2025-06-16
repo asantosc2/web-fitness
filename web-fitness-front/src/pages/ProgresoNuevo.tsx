@@ -16,7 +16,7 @@ export default function ProgresoNuevo() {
     e.preventDefault();
 
     try {
-      const res = await fetch("http://localhost:8000/progresos", {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/progresos`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -39,7 +39,7 @@ export default function ProgresoNuevo() {
       if (fotos && fotos.length > 0) {
         const formData = new FormData();
         Array.from(fotos).forEach((f) => formData.append("archivos", f));
-        await fetch(`http://localhost:8000/progresos/${progreso.id}/fotos`, {
+        await fetch(`${import.meta.env.VITE_API_URL}/progresos/${progreso.id}/fotos`, {
           method: "POST",
           headers: { Authorization: `Bearer ${estado.token}` },
           body: formData,

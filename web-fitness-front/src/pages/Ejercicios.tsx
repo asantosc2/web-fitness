@@ -33,7 +33,7 @@ export default function Ejercicios() {
   );
 
   useEffect(() => {
-    fetch("http://localhost:8000/ejercicios", {
+    fetch(`${import.meta.env.VITE_API_URL}/ejercicios`, {
       headers: {
         Authorization: `Bearer ${estado.token}`,
       },
@@ -98,7 +98,7 @@ export default function Ejercicios() {
             <div className="flex items-center gap-4">
               {ej.fotos && ej.fotos.length > 0 ? (
                 <img
-                  src={`http://localhost:8000/static/${ej.fotos[0].url.replace(/^static\//, '')}`}
+                  src={`${import.meta.env.VITE_API_URL}/static/${ej.fotos[0].url.replace(/^static\//, '')}`}
                   alt={ej.nombre}
                   className="w-20 h-20 object-cover rounded-md"
                 />

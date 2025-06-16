@@ -28,7 +28,7 @@ export default function ProgresoDetalle() {
   const [comentarios, setComentarios] = useState<string>("");
 
   useEffect(() => {
-    fetch(`http://localhost:8000/progresos/${id}`, {
+    fetch(`${import.meta.env.VITE_API_URL}/progresos/${id}`, {
       headers: { Authorization: `Bearer ${estado.token}` },
     })
       .then((res) => res.json())
@@ -40,7 +40,7 @@ export default function ProgresoDetalle() {
   }, [id, estado.token]);
 
   const guardarCambios = async () => {
-    await fetch(`http://localhost:8000/progresos/${id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/progresos/${id}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -55,7 +55,7 @@ export default function ProgresoDetalle() {
     const confirmar = window.confirm("¿Eliminar esta foto?");
     if (!confirmar) return;
 
-    await fetch(`http://localhost:8000/progresos/fotos/${fotoId}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/progresos/fotos/${fotoId}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${estado.token}` },
     });
@@ -76,7 +76,7 @@ export default function ProgresoDetalle() {
     const formData = new FormData();
     Array.from(files).forEach((f) => formData.append("archivos", f));
 
-    const res = await fetch(`http://localhost:8000/progresos/${id}/fotos`, {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/progresos/${id}/fotos`, {
       method: "POST",
       headers: { Authorization: `Bearer ${estado.token}` },
       body: formData,
@@ -98,7 +98,7 @@ export default function ProgresoDetalle() {
     const confirmar = window.confirm("¿Eliminar todo el progreso?");
     if (!confirmar) return;
 
-    await fetch(`http://localhost:8000/progresos/${id}`, {
+    await fetch(`${import.meta.env.VITE_API_URL}/progresos/${id}`, {
       method: "DELETE",
       headers: { Authorization: `Bearer ${estado.token}` },
     });
@@ -151,10 +151,10 @@ export default function ProgresoDetalle() {
           <PhotoProvider>
             <div className="grid grid-cols-2 gap-4">
               {progreso.fotos.map((f) => (
-                <PhotoView key={f.id} src={`http://localhost:8000/static/${f.ruta}`}>
+                <PhotoView key={f.id} src={`${import.meta.env.VITE_API_URL}/static/${f.ruta}`}>
                   <div className="relative cursor-zoom-in">
                     <img
-                      src={`http://localhost:8000/static/${f.ruta}`}
+                      src={`${import.meta.env.VITE_API_URL}/static/${f.ruta}`}
                       alt="foto progreso"
                       className="w-full rounded shadow"
                     />
