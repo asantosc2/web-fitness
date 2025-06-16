@@ -182,7 +182,7 @@ export default function EditarRutina() {
       }
 
       for (const [i, ej] of ejercicios.entries()) {
-        const resEj = await fetch(`${import.meta.env.VITE_API_URL}/rutinas${id}/ejercicios`, {
+        const resEj = await fetch(`${import.meta.env.VITE_API_URL}/rutinas/${id}/ejercicios`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -201,7 +201,7 @@ export default function EditarRutina() {
           const nuevo = await resEj.json();
           const ser = series[ej.id] || [];
           if (ser.length) {
-            await fetch(`${import.meta.env.VITE_API_URL}/${nuevo.id}/series`, {
+            await fetch(`${import.meta.env.VITE_API_URL}/rutina-ejercicio/${nuevo.id}/series`, {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
