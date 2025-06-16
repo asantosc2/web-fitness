@@ -159,7 +159,7 @@ export default function EditarRutina() {
 
   const guardarCambios = async () => {
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/${id}`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/rutinas/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
