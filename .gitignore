@@ -1,6 +1,6 @@
 # Entornos virtuales
 venv/
-
+.env
 # Bytecode compilado de Python
 __pycache__/
 *.pyc
